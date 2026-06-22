@@ -42,6 +42,7 @@
           pkgs = import nixpkgs { inherit system; };
         in
         rec {
+          pi-agent-tools = pkgs.callPackage ./packages/pi-agent-tools.nix { };
           pi = self.wrappers.pi.wrap { inherit pkgs; };
           default = pi;
         }
@@ -76,7 +77,10 @@
         {
           default = pkgs.mkShell {
             name = "pi-wrapped-module";
-            packages = [ self.packages.${system}.pi ];
+            packages = [
+              self.packages.${system}.pi
+              self.packages.${system}.pi-agent-tools
+            ];
           };
         }
       );
@@ -90,7 +94,7 @@
           name = "fmt";
           runtimeInputs = [ pkgs.nixfmt ];
           text = ''
-            nixfmt flake.nix module.nix "$@"
+            nixfmt flake.nix module.nix packages/pi-agent-tools.nix "$@"
           '';
         }
       );

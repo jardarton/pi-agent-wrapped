@@ -14,6 +14,7 @@ let
     themes = ./themes;
     extensions = ./extensions;
   };
+  agentTools = pkgs.callPackage ./packages/pi-agent-tools.nix { };
 in
 {
   imports = [ wlib.modules.default ];
@@ -29,6 +30,12 @@ in
       type = lib.types.str;
       default = "\${XDG_STATE_HOME:-$HOME/.local/state}/pi-wrapped";
       description = "Shell expression for the root directory containing Pi wrapper profiles.";
+    };
+
+    packages = lib.mkOption {
+      type = lib.types.listOf jsonFmtType;
+      default = [ "npm:@ff-labs/pi-fff@0.6.0" ];
+      description = "Declarative Pi packages written to generated settings.json.";
     };
 
     settings = lib.mkOption {
@@ -47,13 +54,15 @@ in
       PI_TELEMETRY = "0";
     };
 
+    runtimePkgs = [ agentTools ];
+
     constructFiles.generatedSettings = {
       relPath = "share/pi-wrapped/settings.json";
       content = builtins.toJSON (
         {
           defaultProjectTrust = "ask";
           enableInstallTelemetry = false;
-          packages = [ ];
+          packages = config.pi.packages;
           skills = [ resourceDirs.skills ];
           prompts = [ resourceDirs.prompts ];
           themes = [ resourceDirs.themes ];
