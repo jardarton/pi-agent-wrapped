@@ -45,7 +45,10 @@ Repo-managed resources live in:
 - `themes/`
 - `extensions/`
 
-These paths are written into generated Pi settings.
+These paths are written into generated Pi settings. Vendored resources currently include:
+
+- extensions: `split-fork`, `todos`, `multi-edit`
+- skills: `librarian`, `tmux`, `commit`, `github`
 
 Herdr's Pi integration is also loaded declaratively by default from a pinned
 Herdr source checkout. It reports Pi session and agent state to Herdr when Pi is
@@ -69,3 +72,7 @@ checkout.sh https://github.com/dmtrKovalenko/fff --path-only
 ## Package source
 
 Pi is provided by `github:numtide/llm-agents.nix` as `llm-agents.packages.${system}.pi`.
+
+## Thanks
+
+Thanks to Armin Ronacher for the Pi extensions and skills in <https://github.com/mitsuhiko/agent-stuff>.
