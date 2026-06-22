@@ -47,6 +47,14 @@ Repo-managed resources live in:
 
 These paths are written into generated Pi settings.
 
+Herdr's Pi integration is also loaded declaratively by default from a pinned
+Herdr source checkout. It reports Pi session and agent state to Herdr when Pi is
+running inside Herdr, and stays inactive elsewhere. Disable with:
+
+```nix
+pi.herdrIntegration.enable = false;
+```
+
 The bundled `librarian` skill includes a checkout helper. The wrapper adds it to `PATH` for Pi-launched shell commands as both:
 
 - `checkout.sh`

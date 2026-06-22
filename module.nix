@@ -15,6 +15,7 @@ let
     extensions = ./extensions;
   };
   agentTools = pkgs.callPackage ./packages/pi-agent-tools.nix { };
+  herdrPiExtension = "${config.pi.herdrIntegration.source}/src/integration/assets/pi/herdr-agent-state.ts";
 in
 {
   imports = [ wlib.modules.default ];
@@ -43,6 +44,25 @@ in
       default = { };
       description = "Extra declarative Pi settings merged into generated settings.json.";
     };
+
+    herdrIntegration = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Whether to declaratively load Herdr's Pi integration extension.";
+      };
+
+      source = lib.mkOption {
+        type = lib.types.package;
+        default = pkgs.fetchFromGitHub {
+          owner = "ogulcancelik";
+          repo = "herdr";
+          rev = "569c33b094ca1161bf2431fd9aa2c48b87dd688e";
+          hash = "sha256-1KBdx1PDcV3KYspbKJuv+ccaVMTWkSmujyMh68yXEEg=";
+        };
+        description = "Pinned Herdr source containing the Pi integration extension.";
+      };
+    };
   };
 
   config = {
@@ -66,7 +86,10 @@ in
           skills = [ resourceDirs.skills ];
           prompts = [ resourceDirs.prompts ];
           themes = [ resourceDirs.themes ];
-          extensions = [ resourceDirs.extensions ];
+          extensions = [
+            resourceDirs.extensions
+          ]
+          ++ lib.optionals config.pi.herdrIntegration.enable [ herdrPiExtension ];
         }
         // config.pi.settings
       );
