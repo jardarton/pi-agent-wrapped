@@ -5,7 +5,21 @@
   rustPlatform,
   cargo,
   rustc,
+  stdenv,
 }:
+
+let
+  platformPackage =
+    {
+      aarch64-darwin = "fff-bin-darwin-arm64";
+      x86_64-darwin = "fff-bin-darwin-x64";
+      aarch64-linux = "fff-bin-linux-arm64-gnu";
+      x86_64-linux = "fff-bin-linux-x64-gnu";
+    }
+    .${stdenv.hostPlatform.system} or (throw "Unsupported fff platform: ${stdenv.hostPlatform.system}");
+
+  libFilename = if stdenv.hostPlatform.isDarwin then "libfff_c.dylib" else "libfff_c.so";
+in
 
 buildNpmPackage rec {
   pname = "pi-package-fff";
@@ -57,6 +71,17 @@ buildNpmPackage rec {
     cp -R node_modules/@sinclair/typebox "$package_dir/node_modules/@sinclair/typebox"
     cp -R packages/fff-node "$package_dir/node_modules/@ff-labs/fff-node"
     rm -rf "$package_dir/node_modules/@ff-labs/fff-node/node_modules"
+
+    platform_dir="$package_dir/node_modules/@ff-labs/${platformPackage}"
+    mkdir -p "$platform_dir"
+    cp "target/release/${libFilename}" "$platform_dir/${libFilename}"
+    cat > "$platform_dir/package.json" <<'EOF'
+    {
+      "name": "@ff-labs/${platformPackage}",
+      "version": "${version}",
+      "private": true
+    }
+    EOF
 
     runHook postInstall
   '';

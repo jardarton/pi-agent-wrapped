@@ -146,12 +146,11 @@ in
     runShell = [
       ''
         profile_dir="${config.pi.stateRoot}/${config.pi.profileName}"
-        mkdir -p "$profile_dir" "$profile_dir/packages" "$profile_dir/sessions"
-        ln -sfn ${config.package}/lib/node_modules/@earendil-works/pi-coding-agent/dist "$profile_dir/packages/dist"
+        mkdir -p "$profile_dir" "$profile_dir/sessions"
         rm -f "$profile_dir/settings.json"
         cp ${config.constructFiles.generatedSettings.path} "$profile_dir/settings.json"
         export PI_CODING_AGENT_DIR="$profile_dir"
-        export PI_PACKAGE_DIR="$profile_dir/packages"
+        export PI_PACKAGE_DIR="${config.package}/lib/node_modules/@earendil-works/pi-coding-agent"
         export PI_CODING_AGENT_SESSION_DIR="$profile_dir/sessions"
       ''
     ];
