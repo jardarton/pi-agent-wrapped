@@ -2,6 +2,45 @@
 
 ## Pinned upstreams
 
+### FFF Pi package
+
+`packages/pi-packages/fff.nix` builds `@ff-labs/pi-fff` as a Nix Pi resource package instead of using Pi's runtime package loader:
+
+- repo: <https://github.com/dmtrKovalenko/fff>
+- extension used: `packages/pi-fff/src/index.ts`
+- flake package: `.#pi-fff`
+- wrapper option: `pi.resourcePackages`
+
+Update steps:
+
+```bash
+rev=$(git ls-remote https://github.com/dmtrKovalenko/fff HEAD | awk '{print $1}')
+```
+
+Then update `rev` in `packages/pi-packages/fff.nix`, temporarily replace the source `hash`, `npmDepsHash`, and `cargoDeps.hash` with `lib.fakeHash`, and run:
+
+```bash
+nix build .#pi-fff --allow-import-from-derivation
+```
+
+Nix will print each expected hash. Replace the fake hashes, then run:
+
+```bash
+nix fmt
+nix build .#pi .#pi-fff --allow-import-from-derivation
+```
+
+Sanity checks:
+
+```bash
+node --input-type=module - <<'JS'
+import { FileFinder } from './result-1/share/pi-packages/fff/node_modules/@ff-labs/fff-node/dist/src/index.js';
+console.log(typeof FileFinder);
+JS
+```
+
+Launch Pi with a temporary state dir and confirm generated settings has `packages = []` and an FFF extension path under `/nix/store/.../share/pi-packages/fff/src/index.ts`.
+
 ### Herdr Pi integration
 
 `module.nix` fetches Herdr with a pinned `pkgs.fetchFromGitHub` source for the declarative Pi integration extension:
