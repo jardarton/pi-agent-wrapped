@@ -8,7 +8,7 @@ Declarative Pi coding-agent setup packaged with `nix-wrapper-modules`.
 nix run .#pi
 ```
 
-The default app exposes a `pi` binary.
+The default app exposes a `p` binary.
 
 ## State
 
@@ -18,7 +18,7 @@ Runtime state is isolated from normal Pi and stored at:
 ${XDG_STATE_HOME:-$HOME/.local/state}/pi-wrapped/default
 ```
 
-The wrapper sets:
+The wrapper executable is named `p`. It sets:
 
 - `PI_CODING_AGENT_DIR`
 - `PI_PACKAGE_DIR`

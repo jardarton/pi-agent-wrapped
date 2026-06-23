@@ -51,11 +51,12 @@
       );
 
       apps = forEachSystem (system: rec {
-        pi = {
+        p = {
           type = "app";
-          program = "${self.packages.${system}.pi}/bin/pi";
+          program = "${self.packages.${system}.pi}/bin/p";
         };
-        default = pi;
+        pi = p;
+        default = p;
       });
 
       nixosModules = {

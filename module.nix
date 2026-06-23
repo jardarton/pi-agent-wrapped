@@ -113,7 +113,7 @@ in
 
   config = {
     package = lib.mkDefault inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.pi;
-    binName = lib.mkDefault "pi";
+    binName = lib.mkDefault "p";
 
     envDefault = {
       PI_SKIP_VERSION_CHECK = "1";
