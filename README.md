@@ -47,7 +47,7 @@ Repo-managed resources live in:
 
 These paths are written into generated Pi settings. Vendored resources currently include:
 
-- extensions: `split-fork`, `todos`, `multi-edit`, `context`
+- extensions: `split-fork`, `todos`, `multi-edit`, `context`, `clanker-working-messages`
 - skills: `librarian`, `tmux`, `commit`, `github`
 - themes: `gruvbox-dark-hard`
 
