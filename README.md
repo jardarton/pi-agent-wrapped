@@ -30,11 +30,11 @@ The wrapper sets:
 
 ## Packages
 
-Declarative Pi packages are written into generated settings. The default profile includes:
+Pi package-loader entries can still be written declaratively with `pi.packages`, but the default profile keeps that list empty and loads FFF from a Nix-built resource package instead:
 
-- `npm:@ff-labs/pi-fff@0.6.0` from <https://github.com/dmtrKovalenko/fff>
+- `pi-fff` from <https://github.com/dmtrKovalenko/fff>
 
-Pi reconciles missing packages on startup after project trust; do not use `pi install` for the intended workflow.
+Pi does not need to run `pi install` for default resources.
 
 ## Resources
 
@@ -49,6 +49,8 @@ These paths are written into generated Pi settings. Vendored resources currently
 
 - extensions: `split-fork`, `todos`, `multi-edit`
 - skills: `librarian`, `tmux`, `commit`, `github`
+
+Nix-built Pi resource packages are also written into generated settings via `pi.resourcePackages`; the default profile exposes the `pi-fff` extension from the `.#pi-fff` package.
 
 Herdr's Pi integration is also loaded declaratively by default from a pinned
 Herdr source checkout. It reports Pi session and agent state to Herdr when Pi is

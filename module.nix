@@ -15,6 +15,40 @@ let
     extensions = ./extensions;
   };
   agentTools = pkgs.callPackage ./packages/pi-agent-tools.nix { };
+  fffPackage = pkgs.callPackage ./packages/pi-packages/fff.nix { };
+  piResourcePackageType = lib.types.submodule {
+    options = {
+      package = lib.mkOption {
+        type = lib.types.package;
+        description = "Nix package providing Pi resources.";
+      };
+
+      extensions = lib.mkOption {
+        type = lib.types.listOf jsonFmtType;
+        default = [ ];
+        description = "Extension paths exposed by this Pi resource package.";
+      };
+
+      skills = lib.mkOption {
+        type = lib.types.listOf jsonFmtType;
+        default = [ ];
+        description = "Skill directories exposed by this Pi resource package.";
+      };
+
+      prompts = lib.mkOption {
+        type = lib.types.listOf jsonFmtType;
+        default = [ ];
+        description = "Prompt directories exposed by this Pi resource package.";
+      };
+
+      themes = lib.mkOption {
+        type = lib.types.listOf jsonFmtType;
+        default = [ ];
+        description = "Theme directories exposed by this Pi resource package.";
+      };
+    };
+  };
+  resourcePackageResources = name: lib.concatMap (pkg: pkg.${name}) config.pi.resourcePackages;
   herdrPiExtension = "${config.pi.herdrIntegration.source}/src/integration/assets/pi/herdr-agent-state.ts";
 in
 {
@@ -35,8 +69,19 @@ in
 
     packages = lib.mkOption {
       type = lib.types.listOf jsonFmtType;
-      default = [ "npm:@ff-labs/pi-fff@0.6.0" ];
-      description = "Declarative Pi packages written to generated settings.json.";
+      default = [ ];
+      description = "Declarative Pi packages written to generated settings.json for Pi's package loader.";
+    };
+
+    resourcePackages = lib.mkOption {
+      type = lib.types.listOf piResourcePackageType;
+      default = [
+        {
+          package = fffPackage;
+          extensions = [ "${fffPackage}/share/pi-packages/fff/src/index.ts" ];
+        }
+      ];
+      description = "Nix-built Pi packages exposed as generated settings resources.";
     };
 
     settings = lib.mkOption {
@@ -83,12 +128,13 @@ in
           defaultProjectTrust = "ask";
           enableInstallTelemetry = false;
           packages = config.pi.packages;
-          skills = [ resourceDirs.skills ];
-          prompts = [ resourceDirs.prompts ];
-          themes = [ resourceDirs.themes ];
+          skills = [ resourceDirs.skills ] ++ resourcePackageResources "skills";
+          prompts = [ resourceDirs.prompts ] ++ resourcePackageResources "prompts";
+          themes = [ resourceDirs.themes ] ++ resourcePackageResources "themes";
           extensions = [
             resourceDirs.extensions
           ]
+          ++ resourcePackageResources "extensions"
           ++ lib.optionals config.pi.herdrIntegration.enable [ herdrPiExtension ];
         }
         // config.pi.settings
@@ -99,6 +145,7 @@ in
       ''
         profile_dir="${config.pi.stateRoot}/${config.pi.profileName}"
         mkdir -p "$profile_dir" "$profile_dir/packages" "$profile_dir/sessions"
+        rm -f "$profile_dir/settings.json"
         cp ${config.constructFiles.generatedSettings.path} "$profile_dir/settings.json"
         export PI_CODING_AGENT_DIR="$profile_dir"
         export PI_PACKAGE_DIR="$profile_dir/packages"

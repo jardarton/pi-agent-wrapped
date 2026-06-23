@@ -43,6 +43,7 @@
         in
         rec {
           pi-agent-tools = pkgs.callPackage ./packages/pi-agent-tools.nix { };
+          pi-fff = pkgs.callPackage ./packages/pi-packages/fff.nix { };
           pi = self.wrappers.pi.wrap { inherit pkgs; };
           default = pi;
         }
@@ -94,7 +95,7 @@
           name = "fmt";
           runtimeInputs = [ pkgs.nixfmt ];
           text = ''
-            nixfmt flake.nix module.nix packages/pi-agent-tools.nix "$@"
+            nixfmt flake.nix module.nix packages/pi-agent-tools.nix packages/pi-packages/fff.nix "$@"
           '';
         }
       );
