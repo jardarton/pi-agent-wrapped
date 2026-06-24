@@ -278,6 +278,29 @@ in
     package = lib.mkDefault inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.pi;
     binName = lib.mkDefault "p";
 
+    install.modules =
+      let
+        launcherOnlyModule =
+          packageAttr:
+          { config, lib, ... }:
+          {
+            config =
+              let
+                cfg = config.wrappers.pi;
+                launcherOnly = cfg.pkgs.runCommand "${cfg.binName}-launcher-only" { } ''
+                  mkdir -p "$out/bin"
+                  ln -s "${cfg.wrapper}/bin/${cfg.binName}" "$out/bin/${cfg.binName}"
+                '';
+              in
+              lib.setAttrByPath packageAttr (lib.mkIf cfg.enable [ launcherOnly ]);
+          };
+      in
+      {
+        homeManager = lib.mkForce (launcherOnlyModule [ "home" "packages" ]);
+        nixos = lib.mkForce (launcherOnlyModule [ "environment" "systemPackages" ]);
+        darwin = lib.mkForce (launcherOnlyModule [ "environment" "systemPackages" ]);
+      };
+
     envDefault = {
       PI_SKIP_VERSION_CHECK = "1";
       PI_TELEMETRY = "0";
@@ -290,6 +313,10 @@ in
     };
 
     runtimePkgs = [ agentTools ];
+
+    drv.postBuild = ''
+      rm -f "$out/bin/pi" "$out/bin/.pi-wrapped"
+    '';
 
     constructFiles.generatedSettings = {
       relPath = "share/pi-wrapped/settings.json";
