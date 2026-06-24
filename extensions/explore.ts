@@ -6,7 +6,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { cheapModelArgs } from "./model-selection";
+import { cheapModelArgs } from "./lib/model-selection";
 
 const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
 const DONE_EXTENSION = join(MODULE_DIR, "explore-helper", "done.ts");

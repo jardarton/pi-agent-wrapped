@@ -17,7 +17,7 @@
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { compact, generateBranchSummary } from "@earendil-works/pi-coding-agent";
-import { resolveCheapModel } from "./model-selection";
+import { resolveCheapModel } from "./lib/model-selection";
 
 export default function (pi: ExtensionAPI) {
 	pi.on("session_before_tree", async (event, ctx) => {
