@@ -17,6 +17,18 @@ let
   agentTools = pkgs.callPackage ./packages/pi-agent-tools.nix { };
   piResources = pkgs.callPackage ./packages/pi-resources.nix { };
   fffPackage = pkgs.callPackage ./packages/pi-packages/fff.nix { };
+  bundledExtensionPath = name: "${piResources}/share/pi-resources/extensions/${name}.ts";
+  bundledExtensionNames = [
+    "clanker-working-messages"
+    "context"
+    "explore"
+    "multi-edit"
+    "split-fork"
+    "todos"
+    "tree-summary-model"
+  ];
+  bundledExtensionPaths = map bundledExtensionPath bundledExtensionNames;
+  gondolinExtensionPath = bundledExtensionPath "gondolin";
   mattPocockSkillsPackage = pkgs.runCommand "pi-package-mattpocock-skills" { } ''
     set -euo pipefail
 
@@ -236,6 +248,27 @@ in
       };
     };
 
+    gondolin = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Whether to declaratively load the bundled Gondolin routing extension and start with Gondolin enabled.";
+      };
+
+      imagePath = lib.mkOption {
+        type = lib.types.nullOr (lib.types.either lib.types.str lib.types.package);
+        default = null;
+        example = "./result-gondolin-image";
+        description = "Preferred Gondolin guest asset directory. When null, the launcher falls back to a cwd-local `.#gondolin-image` flake output, then `GONDOLIN_IMAGE_PATH`, then Gondolin's own default image resolution.";
+      };
+
+      guestMountPath = lib.mkOption {
+        type = lib.types.str;
+        default = "/workspace";
+        description = "Guest mount path exported as `PI_GONDOLIN_GUEST_MOUNT_PATH` when `pi.gondolin.enable = true`.";
+      };
+    };
+
     cheapModels = {
       primary = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
@@ -305,6 +338,10 @@ in
       PI_SKIP_VERSION_CHECK = "1";
       PI_TELEMETRY = "0";
     }
+    // lib.optionalAttrs config.pi.gondolin.enable {
+      PI_GONDOLIN_ENABLED = "1";
+      PI_GONDOLIN_GUEST_MOUNT_PATH = config.pi.gondolin.guestMountPath;
+    }
     // lib.optionalAttrs (config.pi.cheapModels.primary != null) {
       PI_CHEAP_MODEL = config.pi.cheapModels.primary;
     }
@@ -340,9 +377,8 @@ in
           skills = [ resourceDirs.skills ] ++ resourcePackageResources "skills";
           prompts = [ resourceDirs.prompts ] ++ resourcePackageResources "prompts";
           themes = [ resourceDirs.themes ] ++ resourcePackageResources "themes";
-          extensions = [
-            "${piResources}/share/pi-resources/extensions"
-          ]
+          extensions = bundledExtensionPaths
+          ++ lib.optionals config.pi.gondolin.enable [ gondolinExtensionPath ]
           ++ resourcePackageResources "extensions"
           ++ lib.optionals config.pi.herdrIntegration.enable [ herdrPiExtension ];
         }
@@ -396,6 +432,29 @@ in
 
     runShell = [
       ''
+        configured_gondolin_image_path=${if config.pi.gondolin.imagePath == null then "''" else lib.escapeShellArg (toString config.pi.gondolin.imagePath)}
+
+        resolve_gondolin_image_path() {
+          if [ -f flake.nix ]; then
+            if resolved_path="$(${pkgs.nix}/bin/nix --extra-experimental-features 'nix-command flakes' build .#gondolin-image --no-link --print-out-paths 2>/dev/null | tail -n 1)" && [ -n "$resolved_path" ]; then
+              printf '%s\n' "$resolved_path"
+              return 0
+            fi
+          fi
+
+          if [ -n "''${GONDOLIN_IMAGE_PATH-}" ]; then
+            printf '%s\n' "$GONDOLIN_IMAGE_PATH"
+            return 0
+          fi
+
+          if [ -n "$configured_gondolin_image_path" ]; then
+            printf '%s\n' "$configured_gondolin_image_path"
+            return 0
+          fi
+
+          return 1
+        }
+
         profile_dir="${config.pi.stateRoot}/${config.pi.profileName}"
         mkdir -p "$profile_dir" "$profile_dir/sessions"
         rm -f "$profile_dir/settings.json"
@@ -414,6 +473,9 @@ in
         export PI_CODING_AGENT_DIR="$profile_dir"
         export PI_PACKAGE_DIR="${config.package}/lib/node_modules/@earendil-works/pi-coding-agent"
         export PI_CODING_AGENT_SESSION_DIR="$profile_dir/sessions"
+        if resolved_gondolin_image_path="$(resolve_gondolin_image_path)"; then
+          export GONDOLIN_IMAGE_PATH="$resolved_gondolin_image_path"
+        fi
       ''
     ];
   };

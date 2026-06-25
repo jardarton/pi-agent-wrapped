@@ -19,6 +19,7 @@ import * as Diff from "diff";
 import { constants } from "fs";
 import { access as fsAccess, readFile as fsReadFile, unlink as fsUnlink, writeFile as fsWriteFile } from "fs/promises";
 import { isAbsolute, resolve as resolvePath } from "path";
+import { createGondolinTextWorkspace, isGondolinEnabled } from "./lib/gondolin";
 
 const editItemSchema = Type.Object({
 	path: Type.Optional(Type.String({ description: "Path to the file to edit (relative or absolute). Inherits from top-level path if omitted." })),
@@ -480,13 +481,17 @@ function createRealWorkspace(): Workspace {
 	};
 }
 
-function createVirtualWorkspace(cwd: string): Workspace {
+function createVirtualWorkspace(cwd: string, sourceWorkspace: Pick<Workspace, "readText" | "exists">): Workspace {
 	const state = new Map<string, string | null>();
 
 	async function ensureLoaded(absolutePath: string): Promise<void> {
 		if (state.has(absolutePath)) return;
 		try {
-			const content = await fsReadFile(absolutePath, "utf-8");
+			if (!(await sourceWorkspace.exists(absolutePath))) {
+				state.set(absolutePath, null);
+				return;
+			}
+			const content = await sourceWorkspace.readText(absolutePath);
 			state.set(absolutePath, content);
 		} catch {
 			state.set(absolutePath, null);
@@ -737,6 +742,8 @@ export default function (pi: ExtensionAPI) {
 
 		async execute(toolCallId, params, signal, onUpdate, ctx) {
 			const { path, oldText, newText, multi, patch } = params;
+			const realWorkspace = isGondolinEnabled() ? await createGondolinTextWorkspace() : createRealWorkspace();
+			const virtualWorkspace = createVirtualWorkspace(ctx.cwd, realWorkspace);
 
 			const hasAnyClassicParam = path !== undefined || oldText !== undefined || newText !== undefined || multi !== undefined;
 			if (patch !== undefined && hasAnyClassicParam) {
@@ -747,10 +754,10 @@ export default function (pi: ExtensionAPI) {
 				const ops = parsePatch(patch);
 
 				// Preflight on virtual filesystem before mutating real files.
-				await applyPatchOperations(ops, createVirtualWorkspace(ctx.cwd), ctx.cwd, signal, { collectDiff: false });
+				await applyPatchOperations(ops, virtualWorkspace, ctx.cwd, signal, { collectDiff: false });
 
 				// Apply for real.
-				const applied = await applyPatchOperations(ops, createRealWorkspace(), ctx.cwd, signal, { collectDiff: true });
+				const applied = await applyPatchOperations(ops, realWorkspace, ctx.cwd, signal, { collectDiff: true });
 				const summary = applied.map((r, i) => `${i + 1}. ${r.message}`).join("\n");
 				const combinedDiff = applied
 					.filter((r) => r.diff)
@@ -815,13 +822,13 @@ export default function (pi: ExtensionAPI) {
 			// Uses sequential occurrence matching so same-file edits are resolved
 			// in file order (positional ordering).
 			try {
-				await applyClassicEdits(edits, createVirtualWorkspace(ctx.cwd), ctx.cwd, signal, { collectDiff: false });
+				await applyClassicEdits(edits, virtualWorkspace, ctx.cwd, signal, { collectDiff: false });
 			} catch (err: any) {
 				throw new Error(`Preflight failed before mutating files.\n${err.message ?? String(err)}`);
 			}
 
 			// Apply for real.
-			const results = await applyClassicEdits(edits, createRealWorkspace(), ctx.cwd, signal, { collectDiff: true });
+			const results = await applyClassicEdits(edits, realWorkspace, ctx.cwd, signal, { collectDiff: true });
 
 			if (results.length === 1) {
 				const r = results[0];

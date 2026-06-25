@@ -5,7 +5,7 @@ buildNpmPackage {
   version = "0.1.0";
 
   src = ../extensions;
-  npmDepsHash = "sha256-HxBlNHINQQW7B5BiTXvW+nJ8gleIlayKXoxBItghOYs=";
+  npmDepsHash = "sha256-BwCeUPp9EeHXwOvY6kEMkNncT3KsEngINyZdcLrpHN0=";
 
   dontNpmBuild = true;
 

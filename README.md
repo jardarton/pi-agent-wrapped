@@ -73,6 +73,12 @@ These paths are written into generated Pi settings. Vendored resources currently
 
 - extensions: `split-fork`, `todos`, `multi-edit`, `context`, `clanker-working-messages`, `explore`, `tree-summary-model`
 
+The Gondolin extension is bundled too, but it is only loaded when enabled declaratively:
+
+```nix
+pi.gondolin.enable = true;
+```
+
 `explore` and `tree-summary-model` now share cheap-model selection. Set:
 
 - `PI_CHEAP_MODEL` for the primary cheap model
@@ -134,6 +140,46 @@ running inside Herdr, and stays inactive elsewhere. Disable with:
 ```nix
 pi.herdrIntegration.enable = false;
 ```
+
+## Gondolin routing
+
+Enable the bundled Gondolin routing extension declaratively:
+
+```nix
+pi.gondolin = {
+  enable = true;
+  imagePath = ./my-gondolin-image;
+  guestMountPath = "/workspace";
+};
+```
+
+When `pi.gondolin.enable = true`, the wrapper:
+
+- loads the `gondolin` extension
+- exports `PI_GONDOLIN_ENABLED=1`
+- exports `PI_GONDOLIN_GUEST_MOUNT_PATH` from `pi.gondolin.guestMountPath`
+- resolves the Gondolin image with this precedence:
+  1. cwd-local `.#gondolin-image` flake output
+  2. `GONDOLIN_IMAGE_PATH`
+  3. `pi.gondolin.imagePath`
+  4. Gondolin's built-in default image resolution
+
+Runtime controls:
+
+- `/gondolin on` -> route built-in `read`, `write`, `edit`, `bash`, `ls`, `find`, `grep` and user `!` commands into Gondolin
+- `/gondolin off` -> use normal host execution
+- `/gondolin status`
+- `/gondolin toggle`
+
+Environment variables:
+
+- `PI_GONDOLIN_ENABLED=1` (or `PI_GONDOLIN=1`) starts with Gondolin routing enabled
+- `PI_GONDOLIN_GUEST_MOUNT_PATH=/custom/path` changes the guest mount path from the default `/workspace`
+- `GONDOLIN_IMAGE_PATH=/path/to/gondolin-assets` selects a guest image when the cwd flake does not expose `.#gondolin-image`
+
+If `pi.gondolin.enable = false`, the extension is not loaded, so `/gondolin ...` commands are unavailable.
+
+`pi-fff` stays on the host: `fffind`, `ffgrep`, and `fff-multi-grep` are not routed into Gondolin.
 
 The bundled `librarian` skill includes a checkout helper. The wrapper adds it to `PATH` for Pi-launched shell commands as both:
 
