@@ -29,6 +29,19 @@ let
   ];
   bundledExtensionPaths = map bundledExtensionPath bundledExtensionNames;
   gondolinExtensionPath = bundledExtensionPath "gondolin";
+  defaultAppendSystemPrompt = ''
+    # Response style
+
+    Default voice: terse, precise, robot-like.
+
+    - Lead with answer. No pleasantries, filler, hedging, or performative enthusiasm.
+    - Prefer compact technical statements. Fragments OK when unambiguous.
+    - Keep exact technical terms, paths, commands, errors, and code unchanged.
+    - Use arrows for causality when concise: `X -> Y`.
+    - Add detail only when it improves correctness, safety, or next action clarity.
+    - For destructive, security-sensitive, or multi-step instructions, use clear full sentences.
+    - If user asks for normal/plain/expanded wording, follow that request.
+  '';
   mattPocockSkillsPackage = pkgs.runCommand "pi-package-mattpocock-skills" { } ''
     set -euo pipefail
 
@@ -290,20 +303,14 @@ in
 
     appendSystemPrompt = lib.mkOption {
       type = lib.types.lines;
-      default = ''
-        # Response style
+      default = "";
+      description = "Extra Markdown appended after the wrapper default in profile-local `APPEND_SYSTEM.md` under `PI_CODING_AGENT_DIR`.";
+    };
 
-        Default voice: terse, precise, robot-like.
-
-        - Lead with answer. No pleasantries, filler, hedging, or performative enthusiasm.
-        - Prefer compact technical statements. Fragments OK when unambiguous.
-        - Keep exact technical terms, paths, commands, errors, and code unchanged.
-        - Use arrows for causality when concise: `X -> Y`.
-        - Add detail only when it improves correctness, safety, or next action clarity.
-        - For destructive, security-sensitive, or multi-step instructions, use clear full sentences.
-        - If user asks for normal/plain/expanded wording, follow that request.
-      '';
-      description = "Markdown written to the profile-local `APPEND_SYSTEM.md` under `PI_CODING_AGENT_DIR`.";
+    overrideSystemPrompt = lib.mkOption {
+      type = lib.types.nullOr lib.types.lines;
+      default = null;
+      description = "When set, replaces the entire profile-local `APPEND_SYSTEM.md` under `PI_CODING_AGENT_DIR` instead of using the wrapper default plus `pi.appendSystemPrompt`.";
     };
   };
 
@@ -427,7 +434,11 @@ in
 
     constructFiles.generatedAppendSystemPrompt = {
       relPath = "share/pi-wrapped/APPEND_SYSTEM.md";
-      content = config.pi.appendSystemPrompt;
+      content =
+        if config.pi.overrideSystemPrompt != null then
+          config.pi.overrideSystemPrompt
+        else
+          defaultAppendSystemPrompt + config.pi.appendSystemPrompt;
     };
 
     runShell = [

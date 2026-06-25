@@ -46,7 +46,28 @@ Consumers can also set these module options directly instead of overriding raw
 settings content:
 
 - `pi.defaultModel` -> generated `settings.json` `defaultModel`
-- `pi.appendSystemPrompt` -> profile-local `APPEND_SYSTEM.md`
+- `pi.appendSystemPrompt` -> extra Markdown appended after the wrapper default in profile-local `APPEND_SYSTEM.md`
+- `pi.overrideSystemPrompt` -> replace profile-local `APPEND_SYSTEM.md` entirely
+
+Example append:
+
+```nix
+pi.appendSystemPrompt = ''
+  # Local rules
+
+  Always mention exact Nix option names when relevant.
+'';
+```
+
+Example override:
+
+```nix
+pi.overrideSystemPrompt = ''
+  # Response style
+
+  Answer in one sentence unless asked otherwise.
+'';
+```
 
 Default keybindings add Emacs-style `ctrl+p`/`ctrl+n` movement for the editor
 and selectors, unbind conflicting model/session/provider actions, and move the
