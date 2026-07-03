@@ -41,6 +41,37 @@ JS
 
 Launch Pi with a temporary state dir and confirm generated settings has `packages = []` and an FFF extension path under `/nix/store/.../share/pi-packages/fff/src/index.ts`.
 
+### Dynamic workflows Pi package
+
+`packages/pi-packages/dynamic-workflows.nix` builds `pi-dynamic-workflows` as a Nix Pi resource package instead of using Pi's runtime package loader:
+
+- repo: <https://github.com/Michaelliv/pi-dynamic-workflows>
+- extension used: `extensions/workflow.ts`
+- flake package: `.#pi-dynamic-workflows`
+- wrapper option: `pi.resourcePackages`
+
+Update steps:
+
+```bash
+rev=$(git ls-remote https://github.com/Michaelliv/pi-dynamic-workflows HEAD | awk '{print $1}')
+nix flake prefetch --json "github:Michaelliv/pi-dynamic-workflows/$rev"
+```
+
+Then update `rev` and source `hash` in `packages/pi-packages/dynamic-workflows.nix`, temporarily replace `npmDepsHash` with `lib.fakeHash`, and run:
+
+```bash
+nix build .#pi-dynamic-workflows
+```
+
+Nix will print the expected npm dependency hash. Replace the fake hash, then run:
+
+```bash
+nix fmt
+nix build .#p .#pi-dynamic-workflows
+```
+
+The upstream lockfile currently omits integrity fields for three nested `@earendil-works/*` packages. Keep or refresh the `postPatch` integrity substitutions as needed.
+
 ### Herdr Pi integration
 
 `module.nix` fetches Herdr with a pinned `pkgs.fetchFromGitHub` source for the declarative Pi integration extension:

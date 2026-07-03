@@ -17,6 +17,7 @@ let
   agentTools = pkgs.callPackage ./packages/pi-agent-tools.nix { };
   piResources = pkgs.callPackage ./packages/pi-resources.nix { };
   fffPackage = pkgs.callPackage ./packages/pi-packages/fff.nix { };
+  dynamicWorkflowsPackage = pkgs.callPackage ./packages/pi-packages/dynamic-workflows.nix { };
   bundledExtensionPath = name: "${piResources}/share/pi-resources/extensions/${name}.ts";
   bundledExtensionNames = [
     "clanker-working-messages"
@@ -167,6 +168,12 @@ in
         {
           package = fffPackage;
           extensions = [ "${fffPackage}/share/pi-packages/fff/src/index.ts" ];
+        }
+        {
+          package = dynamicWorkflowsPackage;
+          extensions = [
+            "${dynamicWorkflowsPackage}/share/pi-packages/dynamic-workflows/extensions/workflow.ts"
+          ];
         }
       ]
       ++ mattPocockResourcePackage;

@@ -45,6 +45,7 @@
           pi-agent-tools = pkgs.callPackage ./packages/pi-agent-tools.nix { };
           pi-resources = pkgs.callPackage ./packages/pi-resources.nix { };
           pi-fff = pkgs.callPackage ./packages/pi-packages/fff.nix { };
+          pi-dynamic-workflows = pkgs.callPackage ./packages/pi-packages/dynamic-workflows.nix { };
           pi-wrapped = self.wrappers.pi.wrap { inherit pkgs; };
           p = pkgs.runCommand "pi-wrapped-p-only" { } ''
             mkdir -p $out/bin
@@ -87,6 +88,8 @@
               self.packages.${system}.p
               self.packages.${system}.pi-agent-tools
               self.packages.${system}.pi-resources
+              self.packages.${system}.pi-fff
+              self.packages.${system}.pi-dynamic-workflows
             ];
           };
         }
@@ -101,7 +104,7 @@
           name = "fmt";
           runtimeInputs = [ pkgs.nixfmt ];
           text = ''
-            nixfmt flake.nix module.nix packages/pi-agent-tools.nix packages/pi-resources.nix packages/pi-packages/fff.nix "$@"
+            nixfmt flake.nix module.nix packages/pi-agent-tools.nix packages/pi-resources.nix packages/pi-packages/fff.nix packages/pi-packages/dynamic-workflows.nix "$@"
           '';
         }
       );

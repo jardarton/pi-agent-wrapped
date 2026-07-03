@@ -104,9 +104,10 @@ named-session filter toggle to `ctrl+shift+n`.
 
 ## Packages
 
-Pi package-loader entries can still be written declaratively with `pi.packages`, but the default profile keeps that list empty and loads FFF from a Nix-built resource package instead:
+Pi package-loader entries can still be written declaratively with `pi.packages`, but the default profile keeps that list empty and loads Pi packages from Nix-built resource packages instead:
 
 - `pi-fff` from <https://github.com/dmtrKovalenko/fff>
+- `pi-dynamic-workflows` from <https://github.com/Michaelliv/pi-dynamic-workflows>
 
 Pi does not need to run `pi install` for default resources.
 
@@ -154,7 +155,7 @@ Feature-specific overrides still work:
 - skills: `librarian`, `tmux`, `herdr`, `commit`, `github`
 - themes: `gruvbox-dark-hard`
 
-Nix-built Pi resource packages are also written into generated settings via `pi.resourcePackages`; the default profile exposes the `pi-fff` extension from the `.#pi-fff` package.
+Nix-built Pi resource packages are also written into generated settings via `pi.resourcePackages`; the default profile exposes the `pi-fff` extension from `.#pi-fff` and the dynamic workflow extension from `.#pi-dynamic-workflows`.
 
 Matt Pocock skills are available from a pinned upstream source via `pi.mattPocockSkills`. The default profile exposes these manual-only skills by patching `disable-model-invocation: true` into their frontmatter:
 
