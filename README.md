@@ -157,14 +157,7 @@ Feature-specific overrides still work:
 
 Nix-built Pi resource packages are also written into generated settings via `pi.resourcePackages`; the default profile exposes the `pi-fff` extension from `.#pi-fff` and the dynamic workflow extension from `.#pi-dynamic-workflows`.
 
-Matt Pocock skills are available from a pinned upstream source via `pi.mattPocockSkills`. The default profile exposes these manual-only skills by patching `disable-model-invocation: true` into their frontmatter:
-
-- `skills/engineering/diagnosing-bugs`
-- `skills/engineering/grill-with-docs`
-- `skills/engineering/codebase-design`
-- `skills/engineering/improve-codebase-architecture`
-- `skills/engineering/domain-modeling`
-- `skills/productivity/teach`
+Matt Pocock skills are available from a pinned upstream source via `pi.mattPocockSkills`. The default profile discovers and exposes all `skills/engineering/*` and `skills/in-progress/*` entries as manual-only skills by patching `disable-model-invocation: true` into their frontmatter. `skills/deprecated/*` and `skills/personal/*` are intentionally ignored by default.
 
 You can choose exactly which skill directories to expose, for example:
 

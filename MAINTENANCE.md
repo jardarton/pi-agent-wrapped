@@ -109,18 +109,11 @@ Optional sanity check: inspect generated settings and confirm `extensions` conta
 
 `module.nix` exposes a pinned snapshot of <https://github.com/mattpocock/skills> through `pi.mattPocockSkills.source`. Individual skills are opt-in via `pi.mattPocockSkills.skills`.
 
-The default profile exposes selected skills from that pinned source and patches one frontmatter field during packaging:
-
-- `skills/engineering/diagnosing-bugs`
-- `skills/engineering/grill-with-docs`
-- `skills/engineering/codebase-design`
-- `skills/engineering/improve-codebase-architecture`
-- `skills/engineering/domain-modeling`
-- `skills/productivity/teach`
+The default profile discovers and exposes all `skills/engineering/*` and `skills/in-progress/*` entries from that pinned source. It patches every default Matt Pocock skill with:
 
 - `disable-model-invocation: true`
 
-That keeps it available as a manual skill command without including it in the model-visible skill inventory.
+That keeps them available as manual skill commands without including them in the model-visible skill inventory. `skills/deprecated/*` and `skills/personal/*` are intentionally ignored by default.
 
 Update steps:
 

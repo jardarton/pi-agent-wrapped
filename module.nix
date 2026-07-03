@@ -192,22 +192,35 @@ in
         default = pkgs.fetchFromGitHub {
           owner = "mattpocock";
           repo = "skills";
-          rev = "21f59763be7bf734cd4cf138805bb653d9ffebb7";
-          hash = "sha256-FCEEdmtV1jSImNf/KMAdsHqusmWsmHPQeGys/lAeRGg=";
+          rev = "272f99b22574f50e4266791c86b9302682970e23";
+          hash = "sha256-3muzsPd/1OgGgG+aIpXWUm9R2Lxa1I/geJxmNL8VJAY=";
         };
         description = "Pinned Matt Pocock skills source checkout.";
       };
 
       skills = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [
-          "skills/engineering/diagnosing-bugs"
-          "skills/engineering/grill-with-docs"
-          "skills/engineering/codebase-design"
-          "skills/engineering/improve-codebase-architecture"
-          "skills/engineering/domain-modeling"
-          "skills/productivity/teach"
-        ];
+        default =
+          let
+            source = config.pi.mattPocockSkills.source;
+            skillDirsFor =
+              category:
+              let
+                categoryPath = "${source}/skills/${category}";
+                entries = builtins.readDir categoryPath;
+              in
+              lib.mapAttrsToList (name: _: "skills/${category}/${name}") (
+                lib.filterAttrs (
+                  name: type: type == "directory" && builtins.pathExists "${categoryPath}/${name}/SKILL.md"
+                ) entries
+              );
+          in
+          lib.sort builtins.lessThan (
+            lib.concatMap skillDirsFor [
+              "engineering"
+              "in-progress"
+            ]
+          );
         example = [
           "skills/engineering/tdd"
           "skills/engineering/diagnosing-bugs"
@@ -217,14 +230,7 @@ in
 
       hiddenSkills = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [
-          "skills/engineering/diagnosing-bugs"
-          "skills/engineering/grill-with-docs"
-          "skills/engineering/codebase-design"
-          "skills/engineering/improve-codebase-architecture"
-          "skills/engineering/domain-modeling"
-          "skills/productivity/teach"
-        ];
+        default = config.pi.mattPocockSkills.skills;
         example = [ "skills/engineering/diagnosing-bugs" ];
         description = "Subset of `pi.mattPocockSkills.skills` whose `SKILL.md` frontmatter should be patched with `disable-model-invocation: true`.";
         apply =
