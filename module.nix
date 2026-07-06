@@ -8,8 +8,16 @@ inputs:
 }:
 let
   jsonFmtType = wlib.types.structuredValueWith { typeName = "JSON"; };
+  localSkillsDir = pkgs.runCommand "pi-wrapped-skills" { } ''
+    mkdir -p "$out"
+    cp -R ${./skills}/. "$out/"
+    chmod -R u+w "$out"
+    ${lib.optionalString (config.pi.librarian.mode == "tool") ''
+      rm -rf "$out/librarian"
+    ''}
+  '';
   resourceDirs = {
-    skills = ./skills;
+    skills = localSkillsDir;
     prompts = ./prompts;
     themes = ./themes;
     extensions = ./extensions;
@@ -23,12 +31,15 @@ let
     "clanker-working-messages"
     "context"
     "explore"
+    "librarian"
     "multi-edit"
     "split-fork"
     "todos"
     "tree-summary-model"
   ];
-  bundledExtensionPaths = map bundledExtensionPath bundledExtensionNames;
+  bundledExtensionPaths = map bundledExtensionPath (
+    lib.filter (name: name != "librarian" || config.pi.librarian.mode == "tool") bundledExtensionNames
+  );
   gondolinExtensionPath = bundledExtensionPath "gondolin";
   defaultAppendSystemPrompt = ''
     # Response style
@@ -315,6 +326,18 @@ in
         type = lib.types.str;
         default = "/workspace";
         description = "Guest mount path exported as `PI_GONDOLIN_GUEST_MOUNT_PATH` when `pi.gondolin.enable = true`.";
+      };
+    };
+
+    librarian = {
+      mode = lib.mkOption {
+        type = lib.types.enum [
+          "tool"
+          "skill"
+        ];
+        default = "tool";
+        example = "skill";
+        description = "How to expose Librarian. `tool` registers the deterministic librarian tool and hides the librarian skill; `skill` exposes the librarian skill and does not load the tool.";
       };
     };
 

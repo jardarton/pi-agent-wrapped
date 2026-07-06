@@ -122,12 +122,18 @@ Repo-managed resources live in:
 
 These paths are written into generated Pi settings. Vendored resources currently include:
 
-- extensions: `split-fork`, `todos`, `multi-edit`, `context`, `clanker-working-messages`, `explore`, `tree-summary-model`
+- extensions: `split-fork`, `todos`, `multi-edit`, `context`, `clanker-working-messages`, `explore`, `tree-summary-model`, `librarian` (when `pi.librarian.mode = "tool"`)
 
 The Gondolin extension is bundled too, but it is only loaded when enabled declaratively:
 
 ```nix
 pi.gondolin.enable = true;
+```
+
+Librarian can be exposed as either a deterministic tool or the legacy skill, but never both:
+
+```nix
+pi.librarian.mode = "tool"; # default; use "skill" for the skill
 ```
 
 `explore` and `tree-summary-model` now share cheap-model selection. Set:
@@ -152,7 +158,7 @@ Feature-specific overrides still work:
 - `PI_EXPLORE_MODEL`, `PI_EXPLORE_FALLBACK_MODELS`
 - `PI_TREE_SUMMARY_MODEL`, `PI_TREE_SUMMARY_FALLBACK_MODELS`
 - `PI_COMPACTION_MODEL`, `PI_COMPACTION_FALLBACK_MODELS`
-- skills: `librarian`, `tmux`, `herdr`, `commit`, `github`
+- skills: `tmux`, `herdr`, `commit`, `github`, plus `librarian` when `pi.librarian.mode = "skill"`
 - themes: `gruvbox-dark-hard`
 
 Nix-built Pi resource packages are also written into generated settings via `pi.resourcePackages`; the default profile exposes the `pi-fff` extension from `.#pi-fff` and the dynamic workflow extension from `.#pi-dynamic-workflows`.
