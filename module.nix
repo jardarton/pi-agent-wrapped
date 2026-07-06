@@ -31,6 +31,7 @@ let
     "clanker-working-messages"
     "context"
     "explore"
+    "host-statusline"
     "librarian"
     "multi-edit"
     "split-fork"
