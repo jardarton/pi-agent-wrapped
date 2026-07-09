@@ -7,8 +7,6 @@
     nix-wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
     nix-wrapper-modules.inputs.nixpkgs.follows = "nixpkgs";
 
-    llm-agents.url = "github:numtide/llm-agents.nix";
-    llm-agents.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -42,9 +40,10 @@
           pkgs = import nixpkgs { inherit system; };
         in
         rec {
+          pi = pkgs.callPackage ./packages/pi { };
           pi-agent-tools = pkgs.callPackage ./packages/pi-agent-tools.nix { };
           pi-resources = pkgs.callPackage ./packages/pi-resources.nix {
-            piPackage = inputs.llm-agents.packages.${system}.pi;
+            piPackage = pi;
           };
           pi-fff = pkgs.callPackage ./packages/pi-packages/fff.nix { };
           pi-dynamic-workflows = pkgs.callPackage ./packages/pi-packages/dynamic-workflows.nix { };
@@ -89,6 +88,7 @@
             name = "pi-wrapped-module";
             packages = [
               self.packages.${system}.p
+              self.packages.${system}.pi
               self.packages.${system}.pi-agent-tools
               self.packages.${system}.pi-resources
               self.packages.${system}.pi-fff
@@ -107,7 +107,7 @@
           name = "fmt";
           runtimeInputs = [ pkgs.nixfmt ];
           text = ''
-            nixfmt flake.nix module.nix packages/pi-agent-tools.nix packages/pi-resources.nix packages/pi-packages/fff.nix packages/pi-packages/dynamic-workflows.nix "$@"
+            nixfmt flake.nix module.nix packages/pi/package.nix packages/pi/default.nix packages/pi-agent-tools.nix packages/pi-resources.nix packages/pi-packages/fff.nix packages/pi-packages/dynamic-workflows.nix "$@"
           '';
         }
       );

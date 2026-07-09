@@ -179,21 +179,22 @@ in
 
     resourcePackages = lib.mkOption {
       type = lib.types.listOf piResourcePackageType;
-      default = lib.optionals config.pi.fff.enable [
-        {
-          package = fffPackage;
-          extensions = [ "${fffPackage}/share/pi-packages/fff/src/index.ts" ];
-        }
-      ]
-      ++ [
-        {
-          package = dynamicWorkflowsPackage;
-          extensions = [
-            "${dynamicWorkflowsPackage}/share/pi-packages/dynamic-workflows/extensions/workflow.ts"
-          ];
-        }
-      ]
-      ++ mattPocockResourcePackage;
+      default =
+        lib.optionals config.pi.fff.enable [
+          {
+            package = fffPackage;
+            extensions = [ "${fffPackage}/share/pi-packages/fff/src/index.ts" ];
+          }
+        ]
+        ++ [
+          {
+            package = dynamicWorkflowsPackage;
+            extensions = [
+              "${dynamicWorkflowsPackage}/share/pi-packages/dynamic-workflows/extensions/workflow.ts"
+            ];
+          }
+        ]
+        ++ mattPocockResourcePackage;
       description = "Nix-built Pi packages exposed as generated settings resources.";
     };
 
@@ -451,7 +452,7 @@ in
   };
 
   config = {
-    package = lib.mkDefault inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.pi;
+    package = lib.mkDefault (pkgs.callPackage ./packages/pi { });
     binName = lib.mkDefault "p";
 
     install.modules =
