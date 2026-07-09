@@ -3,6 +3,8 @@
 {
   pi = {
     profileName = "camofox-browser";
+    defaultModel = "openai-codex/gpt-5.6-terra";
+    defaultThinkingLevel = "medium";
     localSkills = [
       "herdr"
       "librarian"

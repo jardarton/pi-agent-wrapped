@@ -165,9 +165,22 @@ in
 
     defaultModel = lib.mkOption {
       type = lib.types.str;
-      default = "openai-codex/gpt-5.5";
-      example = "openai-codex/gpt-5.4";
+      default = "openai-codex/gpt-5.6-sol";
+      example = "openai-codex/gpt-5.6-terra";
       description = "Default Pi model. Use a fully-qualified provider/model id; generated settings split it into `defaultProvider` and `defaultModel` for Pi.";
+    };
+
+    defaultThinkingLevel = lib.mkOption {
+      type = lib.types.enum [
+        "off"
+        "minimal"
+        "low"
+        "medium"
+        "high"
+        "xhigh"
+      ];
+      default = "low";
+      description = "Default reasoning effort written to generated settings.json.";
     };
 
     theme = lib.mkOption {
@@ -532,13 +545,13 @@ in
       content = builtins.toJSON (
         {
           defaultProjectTrust = "ask";
-          defaultThinkingLevel = "low";
+          defaultThinkingLevel = config.pi.defaultThinkingLevel;
           enableInstallTelemetry = false;
           theme = config.pi.theme;
           enabledModels = [
-            "openai-codex/gpt-5.4"
-            "openai-codex/gpt-5.4-mini"
-            "openai-codex/gpt-5.5"
+            "openai-codex/gpt-5.6-terra"
+            "openai-codex/gpt-5.6-luna"
+            "openai-codex/gpt-5.6-sol"
           ];
           compaction = {
             enabled = true;
