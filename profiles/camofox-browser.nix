@@ -3,6 +3,12 @@
 {
   pi = {
     profileName = "camofox-browser";
+    localSkills = [
+      "herdr"
+      "librarian"
+    ];
+    fff.enable = false;
+    mattPocockSkills.enable = false;
     camofoxBrowser = {
       enable = true;
       url = "http://localhost:9377";

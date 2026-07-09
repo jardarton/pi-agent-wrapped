@@ -10,7 +10,10 @@ let
   jsonFmtType = wlib.types.structuredValueWith { typeName = "JSON"; };
   localSkillsDir = pkgs.runCommand "pi-wrapped-skills" { } ''
     mkdir -p "$out"
-    cp -R ${./skills}/. "$out/"
+    ${lib.concatMapStringsSep "\n" (skill: ''
+      mkdir -p "$out/$(dirname ${lib.escapeShellArg skill})"
+      cp -R ${./skills}/${skill} "$out/${lib.escapeShellArg skill}"
+    '') config.pi.localSkills}
     chmod -R u+w "$out"
     ${lib.optionalString (config.pi.librarian.mode == "tool") ''
       rm -rf "$out/librarian"
@@ -176,11 +179,13 @@ in
 
     resourcePackages = lib.mkOption {
       type = lib.types.listOf piResourcePackageType;
-      default = [
+      default = lib.optionals config.pi.fff.enable [
         {
           package = fffPackage;
           extensions = [ "${fffPackage}/share/pi-packages/fff/src/index.ts" ];
         }
+      ]
+      ++ [
         {
           package = dynamicWorkflowsPackage;
           extensions = [
@@ -190,6 +195,24 @@ in
       ]
       ++ mattPocockResourcePackage;
       description = "Nix-built Pi packages exposed as generated settings resources.";
+    };
+
+    localSkills = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [
+        "commit"
+        "github"
+        "herdr"
+        "librarian"
+        "tmux"
+      ];
+      description = "Local bundled skill directories from ./skills to expose to Pi.";
+    };
+
+    fff.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Whether to expose the packaged fff file-finder/grep extension.";
     };
 
     mattPocockSkills = {
