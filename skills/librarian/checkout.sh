@@ -89,7 +89,7 @@ trim_repo_input() {
 }
 
 parse_repo() {
-  local input host path first rest
+  local input host path first rest origin_url
   input="$(trim_repo_input "$1")"
 
   # Strip query/fragment for URL-like inputs.
@@ -101,12 +101,14 @@ parse_repo() {
       host="${input#git@}"
       host="${host%%:*}"
       path="${input#*:}"
+      origin_url="$input"
       ;;
     ssh://* )
       rest="${input#ssh://}"
       host="${rest%%/*}"
       host="${host#*@}"
       path="${rest#*/}"
+      origin_url="$input"
       ;;
     http://*|https://* )
       rest="${input#*://}"
@@ -163,21 +165,50 @@ parse_repo() {
     return 1
   fi
 
-  printf '%s\n%s\n%s\n' "$host" "$org" "$repo"
+  if [[ ! "$host" =~ ^[A-Za-z0-9][A-Za-z0-9.-]*(:[0-9]{1,5})?$ ]]; then
+    echo "error: unsafe repository authority: ${host:-<empty>}" >&2
+    return 1
+  fi
+  if [[ "$host" == *:* ]]; then
+    local port="${host##*:}"
+    if (( port < 1 || port > 65535 )); then
+      echo "error: unsafe repository authority: $host" >&2
+      return 1
+    fi
+  fi
+
+  local component
+  for component in "${parts[@]}"; do
+    if [[ "$component" == "." || "$component" == ".." || ! "$component" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+      echo "error: unsafe repository component: ${component:-<empty>}" >&2
+      return 1
+    fi
+  done
+
+  if [[ -n "${origin_url:-}" ]]; then
+    origin_url="${origin_url%/}"
+    origin_url="${origin_url%.git}.git"
+  else
+    origin_url="https://$host/$org/$repo.git"
+  fi
+
+  printf '%s\n%s\n%s\n%s\n' "$host" "$org" "$repo" "$origin_url"
 }
 
-parsed_host=""
-parsed_org=""
-parsed_repo=""
-parsed_index=0
-while IFS= read -r line; do
-  case "$parsed_index" in
-    0) parsed_host="$line" ;;
-    1) parsed_org="$line" ;;
-    2) parsed_repo="$line" ;;
-  esac
-  parsed_index=$((parsed_index + 1))
-done < <(parse_repo "$repo_input")
+parsed="$(parse_repo "$repo_input")" || exit 2
+old_ifs="$IFS"
+IFS=$'\n'
+set -f
+set -- $parsed
+set +f
+IFS="$old_ifs"
+if [[ $# -ne 4 ]]; then
+  exit 2
+fi
+parsed_host="$1"
+parsed_org="$2"
+parsed_repo="$3"
+origin_url="$4"
 
 host="$parsed_host"
 org="$parsed_org"
@@ -185,7 +216,20 @@ repo="$parsed_repo"
 
 cache_root="${LIBRARIAN_CACHE_ROOT:-$HOME/.cache/checkouts}"
 checkout_path="$cache_root/$host/$org/$repo"
-origin_url="https://$host/$org/$repo.git"
+
+IFS='/' read -r -a checkout_org_parts <<< "$org"
+candidate="$cache_root"
+if [[ -L "$candidate" ]]; then
+  echo "error: symlink is not allowed in checkout path: $candidate" >&2
+  exit 2
+fi
+for component in "$host" "${checkout_org_parts[@]}" "$repo"; do
+  candidate="$candidate/$component"
+  if [[ -L "$candidate" ]]; then
+    echo "error: symlink is not allowed in checkout path: $candidate" >&2
+    exit 2
+  fi
+done
 
 mkdir -p "$(dirname "$checkout_path")"
 

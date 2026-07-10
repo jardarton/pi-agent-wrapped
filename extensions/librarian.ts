@@ -19,6 +19,7 @@ interface ParsedRepo {
 	host: string;
 	org: string;
 	repo: string;
+	originUrl: string;
 }
 
 interface CheckoutDetails extends ParsedRepo {
@@ -30,25 +31,57 @@ interface CheckoutDetails extends ParsedRepo {
 	fastForward: "fast-forwarded" | "not-attempted" | "skipped-non-ff" | "skipped-dirty" | "skipped-no-upstream";
 }
 
+const SAFE_COMPONENT = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const SAFE_AUTHORITY = /^[A-Za-z0-9][A-Za-z0-9.-]*(?::[0-9]{1,5})?$/;
+
+function validateComponents(host: string, parts: string[]) {
+	if (!SAFE_AUTHORITY.test(host)) throw new Error(`unsafe host component: ${host || "<empty>"}`);
+	const port = host.includes(":") ? Number(host.slice(host.lastIndexOf(":") + 1)) : null;
+	if (port !== null && (port < 1 || port > 65535)) throw new Error(`unsafe host component: ${host}`);
+	for (const [label, component] of parts.map((part) => ["repository path", part] as const)) {
+		if (!SAFE_COMPONENT.test(component) || component === "." || component === "..") {
+			throw new Error(`unsafe ${label} component: ${component || "<empty>"}`);
+		}
+	}
+}
+
+export async function safeCheckoutPath(root: string, parsed: ParsedRepo) {
+	await fs.mkdir(root, { recursive: true });
+	const resolvedRoot = await fs.realpath(root);
+	let current = resolvedRoot;
+	for (const component of [parsed.host, ...parsed.org.split("/"), parsed.repo]) {
+		current = path.join(current, component);
+		try {
+			if ((await fs.lstat(current)).isSymbolicLink()) throw new Error(`symlink is not allowed in checkout path: ${current}`);
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+		}
+	}
+	return current;
+}
+
 function trimRepoInput(input: string): string {
 	return input.trim();
 }
 
-function parseRepo(rawInput: string): ParsedRepo {
+export function parseRepo(rawInput: string): ParsedRepo {
 	let input = trimRepoInput(rawInput);
 	input = input.split("?")[0] ?? input;
 	input = input.split("#")[0] ?? input;
 
 	let host = "";
 	let repoPath = "";
+	let sshOrigin = "";
 
 	if (/^git@[^:]+:.+/.test(input)) {
 		host = input.slice(4).split(":")[0] ?? "";
 		repoPath = input.slice(input.indexOf(":") + 1);
+		sshOrigin = input;
 	} else if (input.startsWith("ssh://")) {
 		const rest = input.slice("ssh://".length);
 		host = (rest.split("/")[0] ?? "").replace(/^.*@/, "");
 		repoPath = rest.slice(rest.indexOf("/") + 1);
+		sshOrigin = input;
 	} else if (input.startsWith("http://") || input.startsWith("https://")) {
 		const url = new URL(input);
 		host = url.host;
@@ -79,10 +112,14 @@ function parseRepo(rawInput: string): ParsedRepo {
 	}
 
 	parts[parts.length - 1] = (parts[parts.length - 1] ?? "").replace(/\.git$/, "");
+	validateComponents(host, parts);
 	const repo = parts[parts.length - 1] ?? "";
 	const org = parts.slice(0, -1).join("/");
 	if (!host || !org || !repo) throw new Error(`failed to parse repository: ${input}`);
-	return { host, org, repo };
+	const originUrl = sshOrigin
+		? `${sshOrigin.replace(/\/+$/, "").replace(/\.git$/, "")}.git`
+		: `https://${host}/${org}/${repo}.git`;
+	return { host, org, repo, originUrl };
 }
 
 function cacheRoot(): string {
@@ -125,8 +162,8 @@ export default function librarianExtension(pi: ExtensionAPI) {
 			try {
 				const parsed = parseRepo(params.repo);
 				const root = cacheRoot();
-				const checkoutPath = path.join(root, parsed.host, parsed.org, parsed.repo);
-				const originUrl = `https://${parsed.host}/${parsed.org}/${parsed.repo}.git`;
+				const checkoutPath = await safeCheckoutPath(root, parsed);
+				const originUrl = parsed.originUrl;
 				const updateInterval = params.updateInterval ?? Number(process.env.LIBRARIAN_UPDATE_INTERVAL || DEFAULT_UPDATE_INTERVAL);
 				if (!Number.isFinite(updateInterval) || updateInterval < 0) throw new Error("updateInterval must be a non-negative number");
 
