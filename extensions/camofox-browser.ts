@@ -1,5 +1,6 @@
 import { type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { randomUUID } from "node:crypto";
+import { AsyncLocalStorage } from "node:async_hooks";
 import fs from "node:fs/promises";
 import { Type } from "typebox";
 
@@ -33,6 +34,8 @@ async function apiKey() {
   return (await fs.readFile(process.env.CAMOFOX_API_KEY_FILE, "utf8")).trim();
 }
 const fallbackUserId = `pi-camofox-${randomUUID()}`;
+const DEFAULT_TIMEOUT_MS = 30_000;
+const executionSignal = new AsyncLocalStorage<AbortSignal | undefined>();
 
 type ToolCtx = Parameters<
   Parameters<ExtensionAPI["registerTool"]>[0]["execute"]
@@ -68,7 +71,23 @@ function textResult(data: unknown) {
   };
 }
 
-async function request(path: string, init: RequestInit = {}) {
+function timeoutMs() {
+  const configured = Number(process.env.CAMOFOX_TIMEOUT_MS || DEFAULT_TIMEOUT_MS);
+  return Number.isFinite(configured) && configured > 0
+    ? configured
+    : DEFAULT_TIMEOUT_MS;
+}
+
+function requestSignal(signal?: AbortSignal) {
+  const timeout = AbortSignal.timeout(timeoutMs());
+  return signal ? AbortSignal.any([signal, timeout]) : timeout;
+}
+
+export async function camofoxFetch(
+  path: string,
+  init: RequestInit = {},
+  signal?: AbortSignal,
+) {
   const headers: Record<string, string> = {
     ...(init.headers as Record<string, string> | undefined),
   };
@@ -76,7 +95,21 @@ async function request(path: string, init: RequestInit = {}) {
     headers["Content-Type"] = "application/json";
   const key = await apiKey();
   if (key) headers.Authorization = `Bearer ${key}`;
-  const res = await fetch(`${baseUrl()}${path}`, { ...init, headers });
+  const signals = [signal, init.signal].filter(
+    (candidate): candidate is AbortSignal => candidate != null,
+  );
+  const res = await fetch(`${baseUrl()}${path}`, {
+    ...init,
+    headers,
+    signal: requestSignal(
+      signals.length > 1 ? AbortSignal.any(signals) : signals[0],
+    ),
+  });
+  return res;
+}
+
+async function request(path: string, init: RequestInit = {}, signal?: AbortSignal) {
+  const res = await camofoxFetch(path, init, signal ?? executionSignal.getStore());
   if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
   const ct = res.headers.get("content-type") || "";
   return ct.includes("application/json") ? res.json() : res.text();
@@ -140,15 +173,15 @@ export default function camofoxBrowser(pi: ExtensionAPI) {
     name: string,
     description: string,
     parameters: any,
-    fn: (p: AnyParams, ctx: ToolCtx) => Promise<any>,
+    fn: (p: AnyParams, ctx: ToolCtx, signal?: AbortSignal) => Promise<any>,
   ) =>
     pi.registerTool({
       name,
       label: name,
       description,
       parameters,
-      execute: async (_id, params, _signal, _update, ctx) =>
-        fn(params as AnyParams, ctx),
+      execute: async (_id, params, signal, _update, ctx) =>
+        executionSignal.run(signal, () => fn(params as AnyParams, ctx, signal)),
     });
 
   const Tab = Type.Object({
@@ -159,7 +192,7 @@ export default function camofoxBrowser(pi: ExtensionAPI) {
     "camofox_create_tab",
     "Create a new Camofox anti-detection browser tab. Prefer for web browsing.",
     Type.Object({ url: Type.String() }),
-    async (p, ctx) =>
+    async (p, ctx, signal) =>
       textResult(
         await request("/tabs", {
           method: "POST",
@@ -168,16 +201,18 @@ export default function camofoxBrowser(pi: ExtensionAPI) {
             userId: userId(ctx),
             sessionKey: sessionKey(ctx),
           }),
-        }),
+        }, signal),
       ),
   );
   reg(
     "camofox_snapshot",
     "Get accessibility snapshot with eN element refs and pagination metadata.",
     Type.Object({ tabId: Type.String(), offset: Type.Optional(Type.Number()) }),
-    async (p, ctx) => {
+    async (p, ctx, signal) => {
       const r: any = await request(
         `/tabs/${encodeURIComponent(p.tabId)}/snapshot?userId=${encodeURIComponent(userId(ctx))}&offset=${Number.isFinite(p.offset) ? p.offset : 0}`,
+        undefined,
+        signal,
       );
       return {
         content: [
@@ -316,10 +351,11 @@ export default function camofoxBrowser(pi: ExtensionAPI) {
         }),
       ),
   );
-  reg("camofox_screenshot", "Take a PNG screenshot.", Tab, async (p, ctx) => {
-    const res = await fetch(
-      `${baseUrl()}/tabs/${encodeURIComponent(p.tabId)}/screenshot?userId=${encodeURIComponent(userId(ctx))}`,
-      { headers: apiKey() ? { Authorization: `Bearer ${apiKey()}` } : {} },
+  reg("camofox_screenshot", "Take a PNG screenshot.", Tab, async (p, ctx, signal) => {
+    const res = await camofoxFetch(
+      `/tabs/${encodeURIComponent(p.tabId)}/screenshot?userId=${encodeURIComponent(userId(ctx))}`,
+      {},
+      signal,
     );
     if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
     return {
