@@ -6,7 +6,7 @@ type ModelConfig = {
 	reserveTokens?: number;
 };
 
-const DEFAULT_CHEAP_MODEL = "openai-codex/gpt-5.4-mini";
+const DEFAULT_CHEAP_MODEL = "openai-codex/gpt-5.6-luna";
 const DEFAULT_CHEAP_FALLBACK_MODELS = [
 	"github-copilot/gpt-5.4-mini",
 	"anthropic/claude-haiku-4-5",

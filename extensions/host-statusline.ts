@@ -71,13 +71,13 @@ export default function (pi: ExtensionAPI) {
 				const sessionName = ctx.sessionManager.getSessionName();
 				if (sessionName) pwd = `${pwd} • ${sessionName}`;
 
-				const hostText = theme.fg("dim", host);
+				const hostText = truncateToWidth(theme.fg("dim", host), width, "");
 				const hostWidth = visibleWidth(hostText);
-				const gap = hostWidth > 0 ? 2 : 0;
+				const gap = hostWidth > 0 && width > hostWidth ? Math.min(2, width - hostWidth) : 0;
 				const pwdWidth = Math.max(0, width - hostWidth - gap);
-				const pwdLineLeft = truncateToWidth(theme.fg("dim", pwd), pwdWidth, theme.fg("dim", "..."));
+				const pwdLineLeft = truncateToWidth(theme.fg("dim", pwd), pwdWidth, "");
 				const padding = " ".repeat(Math.max(0, width - visibleWidth(pwdLineLeft) - hostWidth));
-				const pwdLine = pwdLineLeft + padding + hostText;
+				const pwdLine = truncateToWidth(pwdLineLeft + padding + hostText, width, "");
 
 				const statsParts: string[] = [];
 				if (totalInput) statsParts.push(`↑${formatTokens(totalInput)}`);
@@ -120,7 +120,7 @@ export default function (pi: ExtensionAPI) {
 					const statusLine = Array.from(extensionStatuses.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([, text]) => sanitizeStatusText(text)).join(" ");
 					lines.push(truncateToWidth(statusLine, width, theme.fg("dim", "...")));
 				}
-				return lines;
+				return lines.map((line) => truncateToWidth(line, width, ""));
 			},
 		}));
 	}

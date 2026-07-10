@@ -145,7 +145,7 @@ Or configure them declaratively:
 
 ```nix
 pi.cheapModels = {
-  primary = "openai-codex/gpt-5.4-mini";
+  primary = "openai-codex/gpt-5.6-luna";
   fallbacks = [
     "github-copilot/gpt-5.4-mini"
     "anthropic/claude-haiku-4-5"
