@@ -220,6 +220,23 @@ in
             prompts = [ "${codexGoalPackage}/share/pi-packages/codex-goal/prompts" ];
           }
         ]
+        ++ lib.optionals config.pi.herdrSubagents.enable (
+          let
+            package = config.pi.herdrSubagents.package;
+          in
+          if package == null then
+            throw "pi.herdrSubagents.package must be set when pi.herdrSubagents.enable is true"
+          else
+            [
+              {
+                inherit package;
+                extensions = [ "${package}/share/pi-packages/pi-herdr-subagents/src/index.ts" ];
+                skills = [
+                  "${package}/share/pi-packages/pi-herdr-subagents/skills/setup-herdr-subagents"
+                ];
+              }
+            ]
+        )
         ++ mattPocockResourcePackage;
       description = "Nix-built Pi packages exposed as generated settings resources.";
     };
@@ -263,6 +280,20 @@ in
       type = lib.types.bool;
       default = true;
       description = "Whether to expose the packaged Codex-style goal extension and prompt template.";
+    };
+
+    herdrSubagents = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Whether to expose the generic Herdr subagent extension and its setup skill.";
+      };
+
+      package = lib.mkOption {
+        type = lib.types.nullOr lib.types.package;
+        default = null;
+        description = "Nix-built pi-herdr-subagents package; required when the feature is enabled.";
+      };
     };
 
     mattPocockSkills = {

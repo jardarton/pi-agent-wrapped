@@ -110,7 +110,18 @@ Pi package-loader entries can still be written declaratively with `pi.packages`,
 - `pi-dynamic-workflows` from <https://github.com/Michaelliv/pi-dynamic-workflows>
 - `pi-codex-goal` from <https://github.com/fitchmultz/pi-codex-goal>
 
-Pi does not need to run `pi install` for default resources.
+Optional consumer-supplied resource packages can be built with the reusable derivations under `packages/pi-packages/`. Herdr subagents are enabled with an explicit package so this public flake does not depend on a private source:
+
+```nix
+pi.herdrSubagents = {
+  enable = true;
+  package = pkgs.callPackage (inputs.pi-agent-wrapped + "/packages/pi-packages/herdr-subagents.nix") {
+    src = inputs.pi-herdr-subagents;
+  };
+};
+```
+
+Pi does not need to run `pi install` for Nix-built resources.
 
 ## Resources
 
@@ -167,6 +178,8 @@ This repository patches Pi via `packages/pi/tree-summary-stream-fn.patch`. The p
 
 Nix-built Pi resource packages are also written into generated settings via `pi.resourcePackages`; the default profile exposes the `pi-fff`, dynamic workflow, and Codex-style goal extensions. Set `pi.goal.enable = false` to disable the goal extension and its `/create-goal` prompt template.
 
+`pi.herdrSubagents.enable` adds the consumer-supplied generic Herdr command supervisor and its manual setup skill. The Camofox Home Manager profile accepts the same package through `piProfiles.camofoxBrowser.herdrSubagentsPackage`; when set, it declaratively deploys the generated `delegate-with-herdr` skill to the default and Camofox profile state roots. The generated recipes use exact Nix store launchers for same-profile Pi and Camofox delegation. The minimal profile explicitly disables this feature and remains a leaf profile.
+
 Extension resources are TypeScript-checked during the `pi-resources` Nix build. Pi API packages are dev-only typecheck inputs; the build verifies `@earendil-works/pi-coding-agent` matches the wrapped runtime Pi version, prunes dev dependencies before install, and fails if Pi runtime packages would be vendored into extension resources.
 
 Matt Pocock skills are available from a pinned upstream source via `pi.mattPocockSkills`. The default profile discovers and exposes all `skills/engineering/*` and `skills/in-progress/*` entries as manual-only skills by patching `disable-model-invocation: true` into their frontmatter. `skills/deprecated/*` and `skills/personal/*` are intentionally ignored by default.
@@ -203,7 +216,7 @@ The independently installable minimal profile retains the default model,
 theme, keybindings, response style, status UI, session tree/compaction,
 context, split/fork, multi-edit, `fff`, Librarian, and Herdr integration. It
 exposes only the `commit` and `github` skills and omits Better OpenAI,
-`explore`, todos, dynamic workflows, goals, and Matt Pocock skills.
+`explore`, todos, dynamic workflows, goals, Herdr subagents, and Matt Pocock skills.
 
 ```nix
 imports = [ inputs.pi-agent-wrapped.homeModules.minimal ];

@@ -6,7 +6,6 @@
 
     nix-wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
     nix-wrapper-modules.inputs.nixpkgs.follows = "nixpkgs";
-
   };
 
   outputs =
@@ -126,7 +125,7 @@
           name = "fmt";
           runtimeInputs = [ pkgs.nixfmt ];
           text = ''
-            nixfmt flake.nix module.nix packages/pi/package.nix packages/pi/default.nix packages/pi-agent-tools.nix packages/pi-resources.nix packages/pi-packages/fff.nix packages/pi-packages/dynamic-workflows.nix packages/pi-packages/codex-goal.nix "$@"
+            nixfmt flake.nix module.nix packages/pi/package.nix packages/pi/default.nix packages/pi-agent-tools.nix packages/pi-resources.nix packages/pi-packages/fff.nix packages/pi-packages/dynamic-workflows.nix packages/pi-packages/codex-goal.nix packages/pi-packages/herdr-subagents.nix "$@"
           '';
         }
       );

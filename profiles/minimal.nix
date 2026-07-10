@@ -19,6 +19,7 @@
     fff.enable = true;
     dynamicWorkflows.enable = false;
     goal.enable = false;
+    herdrSubagents.enable = false;
     mattPocockSkills.enable = false;
   };
 }

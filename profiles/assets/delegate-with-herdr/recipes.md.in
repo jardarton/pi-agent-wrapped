@@ -1,0 +1,27 @@
+# Delegation recipes
+
+## same-profile-pi
+
+- Role: General finite autonomous work using the current profile and its configured defaults.
+- Executable/profile: `@runCurrentPi@`; package-owned launcher-preservation helper.
+- Command template: `@runCurrentPi@ --no-session -p <PROMPT>`
+- Prompt quoting: Encode the complete prompt as one POSIX shell token by wrapping it in single quotes and replacing every embedded `'` with `'"'"'`; replace the complete `<PROMPT>` marker with that token.
+- Model/reasoning: Profile defaults. The orchestrator may deliberately insert confirmed `--model` and `--thinking` flags before `-p`.
+- Cwd: Pass the task's intended repository or directory as `cwd` to `subagent`.
+- Timeout: Choose a task-based `timeoutMinutes` when practical; omission means no deadline.
+- Result: Pi print-mode stdout fallback.
+- Validation: Static; generated from the pinned `pi-agent-tools` package.
+- Limits: Requires an active wrapped Pi profile with canonical `PI_LAUNCHER_BIN`.
+
+## camofox-pi
+
+- Role: Finite browser research through the configured Camofox Pi profile.
+- Executable/profile: `@camofoxLauncher@`; Nix-built `p-camofox` profile launcher.
+- Command template: `@camofoxLauncher@ --no-session -p <PROMPT>`
+- Prompt quoting: Encode the complete prompt as one POSIX shell token by wrapping it in single quotes and replacing every embedded `'` with `'"'"'`; replace the complete `<PROMPT>` marker with that token.
+- Model/reasoning: Profile defaults. The orchestrator may deliberately insert confirmed `--model` and `--thinking` flags before `-p`.
+- Cwd: Pass the task's intended repository or directory as `cwd` to `subagent`.
+- Timeout: Choose a task-based `timeoutMinutes` when practical; omission means no deadline.
+- Result: Pi print-mode stdout fallback.
+- Validation: Static; launcher identity is generated from the configured Camofox wrapper derivation.
+- Limits: Requires the Camofox service and its separately configured authentication.
