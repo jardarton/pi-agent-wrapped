@@ -272,7 +272,7 @@ async function startExplore(task: string, ctx: ExtensionContext, pi: ExtensionAP
 
   const pane = createRightSplit(cwd);
   const models = modelArgs().map(shellEscape).join(" ");
-  const piCommand = `PI_EXPLORE_SESSION=${shellEscape(sessionFile)} PI_EXPLORE_AUTO_EXIT=1 ${shellEscape(agentCommand())} --session ${shellEscape(sessionFile)} -e ${shellEscape(DONE_EXTENSION)} --model "$model" --tools ${shellEscape("read,bash,explore_done")} ${shellEscape(`@${taskFile}`)}`;
+  const piCommand = `PI_EXPLORE_SESSION=${shellEscape(sessionFile)} PI_EXPLORE_AUTO_EXIT=1 ${agentCommand()} --session ${shellEscape(sessionFile)} -e ${shellEscape(DONE_EXTENSION)} --model "$model" --tools ${shellEscape("read,bash,explore_done")} ${shellEscape(`@${taskFile}`)}`;
   writeFileSync(scriptFile, `#!/bin/bash\ncd ${shellEscape(cwd)} || exit 1\nstatus=1\nfor model in ${models}; do\n  echo "Explore trying model: $model"\n  ${piCommand}\n  status=$?\n  if [ "$status" -eq 0 ]; then\n    break\n  fi\n  echo "Explore model failed: $model (exit $status)"\ndone\necho '__EXPLORE_DONE_'$status'__'\nexit "$status"\n`, { mode: 0o755 });
   sendCommand(pane, `bash ${shellEscape(scriptFile)}`);
 
