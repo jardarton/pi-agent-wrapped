@@ -1,15 +1,21 @@
 # Agent instructions
 
+## Reference
+<https://github.com/earendil-works/pi>
+<https://github.com/BirdeeHub/nix-wrapper-modules>
+
 ## Pi launcher invariants
 
 `PI_LAUNCHER_BIN` is the authoritative identity of the currently active Pi wrapper.
 
 When spawning a new Pi process:
+
 - always use `PI_LAUNCHER_BIN` or `run-current-pi`
 - never invoke `pi`, `p`, `p-minimal`, `p-sandboxed`, or any other launcher name directly
 - if `PI_LAUNCHER_BIN` is unset, fail instead of guessing
 
 This applies to:
+
 - extensions
 - shell scripts
 - Herdr/tmux/Ghostty spawned processes
