@@ -4,26 +4,15 @@
 <https://github.com/earendil-works/pi>
 <https://github.com/BirdeeHub/nix-wrapper-modules>
 
-## Pi launcher invariants
+## Pi-native child processes
 
-`PI_LAUNCHER_BIN` is the authoritative identity of the currently active Pi wrapper.
+`PI_LAUNCHER_BIN` is the authoritative identity of the currently active Pi wrapper. Pi-native features that fork, resume, or create a child of the active Pi session must reuse this exact launcher. This includes split/fork, explore, and similar extension-managed child sessions.
 
-When spawning a new Pi process:
+Do not resolve a profile name from `PATH` or fall back to `process.execPath` for these Pi-native descendants. If `PI_LAUNCHER_BIN` is unavailable, fail instead of guessing.
 
-- always use `PI_LAUNCHER_BIN` or `run-current-pi`
-- never invoke `pi`, `p`, `p-minimal`, or any other launcher name directly
-- if `PI_LAUNCHER_BIN` is unset, fail instead of guessing
+This invariant does not apply to root launchers, generic orchestrators, configured commands, arbitrary shell commands, or explicit profile selection. Those may run any command selected by their user or configuration.
 
-This applies to:
-
-- extensions
-- shell scripts
-- Herdr/tmux/Ghostty spawned processes
-- ad hoc agent actions requested in chat
-
-## Manual and agent spawning
-
-Prefer `run-current-pi` for manual or ad hoc agent-driven Pi spawns. It validates `PI_LAUNCHER_BIN` and execs the exact active wrapper.
+`run-current-pi` is an optional convenience for manually re-executing the active wrapper.
 
 Examples:
 

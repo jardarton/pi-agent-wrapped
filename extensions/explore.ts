@@ -195,7 +195,7 @@ function modelArgs(): string[] {
 }
 
 function agentCommand(): string {
-  return process.env.PI_EXPLORE_COMMAND ?? getPiInvocationParts().map(shellEscape).join(" ");
+  return getPiInvocationParts().map(shellEscape).join(" ");
 }
 
 function buildTask(task: string): string {
