@@ -134,6 +134,9 @@ let
     ++ lib.optionals config.pi.camofoxBrowser.enable [
       "${piResources}/share/pi-resources/extensions/camofox-browser.ts"
     ]
+    ++ lib.optionals config.pi.nixOptions.enable [
+      "${piResources}/share/pi-resources/extensions/nix-options.ts"
+    ]
     ++ resourcePackageResources "extensions"
     ++ lib.optionals config.pi.herdrIntegration.enable [ herdrPiExtension ];
   herdrPiExtension = "${config.pi.herdrIntegration.source}/src/integration/assets/pi/herdr-agent-state.ts";
@@ -436,6 +439,12 @@ in
       };
     };
 
+    nixOptions.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether to load the Nix flake module-option discovery and inspection tool.";
+    };
+
     camofoxBrowser = {
       enable = lib.mkOption {
         type = lib.types.bool;
@@ -583,7 +592,8 @@ in
     runtimePkgs = [
       agentTools
       pkgs.python3
-    ];
+    ]
+    ++ lib.optionals config.pi.nixOptions.enable [ pkgs.nix ];
 
     drv.postBuild = ''
       rm -f "$out/bin/pi" "$out/bin/.pi-wrapped"

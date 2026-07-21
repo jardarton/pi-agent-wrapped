@@ -168,7 +168,25 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
 - `pi.splash.*`
 - opt-in integrations under `pi.fff`, `pi.dynamicWorkflows`, `pi.goal`,
   `pi.herdrIntegration`, `pi.mattPocockSkills`, `pi.camofoxBrowser`,
-  `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
+  `pi.nixOptions`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
+
+### Nix option lookup
+
+Enable `pi.nixOptions.enable` to expose the `nix_options` tool and add Nix to the
+wrapper runtime. It is disabled by default. The tool discovers common flake
+configuration outputs and searches or inspects their evaluated module option
+metadata without evaluating final option values.
+
+```nix
+{
+  pi.nixOptions.enable = true;
+}
+```
+
+Supported output roots are `nixosConfigurations`, `homeConfigurations`,
+`darwinConfigurations`, and `nixOnDroidConfigurations`. A full output path can
+also be supplied for another configuration output that exposes an `options`
+attribute.
 
 ## Runtime state and launcher identity
 
