@@ -2,12 +2,14 @@
 // Derived in part from mattleong/pi-better-openai (MIT). See THIRD_PARTY_NOTICES.md.
 import { readFileSync } from "node:fs";
 import { BorderedLoader, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { StringEnum } from "@earendil-works/pi-ai";
 import { Box, Container, Image, Text } from "@earendil-works/pi-tui";
+import { Type } from "typebox";
 import { getCredentials } from "./lib/better-openai/auth.ts";
 import { readRawConfig, resolveConfig, updateConfig, writeRawConfig, type ResolvedConfig } from "./lib/better-openai/config.ts";
 import { FastController, modelKey, supportsFast } from "./lib/better-openai/fast.ts";
 import { maskIdentifier, sanitizeError } from "./lib/better-openai/format.ts";
-import { generateImage } from "./lib/better-openai/image.ts";
+import { generateImage, IMAGE_ACTIONS } from "./lib/better-openai/image.ts";
 import { availableCredits, consumeResetCredit, fetchResetCredits, formatCredits, type ResetCreditList } from "./lib/better-openai/reset-credits.ts";
 import { showSettings } from "./lib/better-openai/settings.ts";
 import { compactUsage, detailedUsage, fetchUsage, type UsageSnapshot } from "./lib/better-openai/usage.ts";
@@ -31,6 +33,7 @@ export default function betterOpenAI(pi: ExtensionAPI): void {
  let sessionAbort: (() => void) | undefined;
  let generation = 0;
  const requests = new Set<AbortController>();
+ const imageToolEnabled = process.env.PI_BETTER_OPENAI_IMAGE_TOOL === "1";
 
  const config = (ctx: ExtensionContext) => cfg ?? (cfg = resolveConfig(ctx));
  const eligible = (ctx: ExtensionContext, c = config(ctx)) => !!ctx.model && ["openai", "openai-codex"].includes(ctx.model.provider) && (!c.usage.showOnlyOnSubscriptionModels || ctx.modelRegistry.isUsingOAuth(ctx.model));
@@ -52,6 +55,33 @@ export default function betterOpenAI(pi: ExtensionAPI): void {
   ctx.ui.notify("Usage: /openai-usage [resets|reset]", "error");
  } catch (error) { ctx.ui.notify(sanitizeError(error), "error"); } } });
  pi.registerCommand("openai-image", { description: "Generate an image through OpenAI Codex authentication", handler: async (args, ctx) => { const prompt = args.trim(); if (!prompt) { ctx.ui.notify("Usage: /openai-image <prompt>", "error"); return; } const request = requestSignal(config(ctx).image.timeoutMs + 1000); try { let result: Awaited<ReturnType<typeof generateImage>> | undefined; if (ctx.mode === "tui") { result = await ctx.ui.custom((tui, theme, _keys, done) => { const loader = new BorderedLoader(tui, theme, "Generating OpenAI image… (Esc to cancel)"); loader.onAbort = () => { request.controller.abort(); done(undefined); }; void generateImage(prompt, ctx, config(ctx), request.signal).then(done).catch(error => done({ error } as any)); return loader; }); if (result && "error" in result) throw (result as any).error; } else { ctx.ui.notify("Generating OpenAI image…", "info"); result = await generateImage(prompt, ctx, config(ctx), request.signal); } if (!result) { ctx.ui.notify("Image generation cancelled.", "info"); return; } pi.appendEntry(IMAGE_ENTRY, result.savedPath ? { savedPath: result.savedPath, mimeType: result.mimeType, prompt, model: result.model } : { data: result.data, mimeType: result.mimeType, prompt, model: result.model }); ctx.ui.notify(result.savedPath ? `Image saved: ${result.savedPath}` : "Image generated (not saved).", "info"); } catch (error) { ctx.ui.notify(request.signal.aborted ? "Image request cancelled or timed out." : sanitizeError(error), "error"); } finally { requests.delete(request.controller); } } });
+ if (imageToolEnabled) pi.registerTool({
+  name: "openai_image",
+  label: "OpenAI image",
+  description: "Generate or edit images through OpenAI Codex subscription auth using the hosted image_generation tool. Supports up to five project-local reference/edit images.",
+  promptSnippet: "Generate or edit raster images via OpenAI Codex subscription auth.",
+  promptGuidelines: [
+   "Use openai_image when the user asks to generate or edit a raster image, photo, illustration, mockup, texture, sprite, or bitmap asset.",
+   "Pass the user's image prompt verbatim unless the user explicitly asks you to refine it.",
+   "Use openai_image with images for project-local reference images or edit targets.",
+  ],
+  parameters: Type.Object({
+   prompt: Type.String({ description: "Image generation/editing prompt. Pass the user's wording verbatim unless explicitly asked to refine it." }),
+   action: Type.Optional(StringEnum(IMAGE_ACTIONS, { description: "Generate, edit/reference supplied images, or let the model decide." })),
+   images: Type.Optional(Type.Array(Type.String(), { maxItems: 5, description: "Project-local image paths to use as edit targets or references." })),
+   model: Type.Optional(Type.String({ description: "OpenAI Codex model override." })),
+   outputFormat: Type.Optional(StringEnum(["png", "jpeg", "webp"] as const)),
+   save: Type.Optional(StringEnum(["project", "global", "custom", "none"] as const)),
+   saveDir: Type.Optional(Type.String({ description: "Save directory when save=custom." })),
+  }),
+  async execute(_toolCallId, params, signal, onUpdate, ctx) {
+   const model = params.model?.trim() || (ctx.model?.provider === "openai-codex" ? ctx.model.id : config(ctx).image.defaultModel);
+   onUpdate?.({ content: [{ type: "text", text: `Requesting OpenAI image_generation via openai-codex/${model}...` }] });
+   const result = await generateImage(params.prompt, ctx, config(ctx), signal, params);
+   const text = [`Generated image using OpenAI image_generation via openai-codex/${result.model}.`, `Action: ${result.action}.`, `Prompt: ${result.prompt}`, ...(result.savedPath ? [`Saved: ${result.savedPath}`] : [])].join("\n");
+   return { content: [{ type: "text", text }, { type: "image", data: result.data, mimeType: result.mimeType }], details: result };
+  },
+ });
  pi.registerEntryRenderer(IMAGE_ENTRY, (entry, _options, theme) => { const d = entry.data as { savedPath?: string; data?: string; mimeType: string; prompt: string; model: string }; const c = new Container(); const box = new Box(1, 1, line => theme.bg("customMessageBg", line)); box.addChild(new Text(theme.fg("accent", theme.bold("[openai-image]")) + `\n${d.prompt}\n${theme.fg("dim", `${d.model}${d.savedPath ? ` · ${d.savedPath}` : ""}`)}`, 0, 0)); try { const data = d.data ?? (d.savedPath ? readFileSync(d.savedPath).toString("base64") : undefined); if (data) box.addChild(new Image(data, d.mimeType, { fallbackColor: line => theme.fg("dim", line) }, { maxWidthCells: 80, maxHeightCells: 24, filename: d.savedPath })); } catch {} c.addChild(box); return c; });
  pi.registerCommand("openai-settings", { description: "Configure Better OpenAI", handler: async (_args, ctx) => { const auth = await getCredentials(ctx); const c = config(ctx); await showSettings(ctx, c, (id, value) => { updateConfig(c.configPath, id, parseSetting(id, value)); cfg = resolveConfig(ctx); fast.desired = cfg.desiredActive; fast.apply(ctx, cfg); persistFast(ctx); if (id.startsWith("usage.")) start(ctx); }, `Config: ${c.configPath}\nModel: ${modelKey(ctx)} · Auth: ${auth?.source ?? "missing"} · Account: ${maskIdentifier(auth?.accountId)}${c.projectTrusted ? "" : "\nProject config ignored: project is untrusted"}`); } });
  pi.registerEntryRenderer(STATUS_ENTRY, (entry, _options, theme) => { const lines = (entry.data as { lines?: string[] }).lines ?? []; return new Text(`${theme.fg("accent", "[OpenAI]")}\n${theme.fg("dim", lines.join("\n"))}`, 0, 0); });

@@ -445,6 +445,12 @@ in
       description = "Whether to load the Nix flake module-option discovery and inspection tool.";
     };
 
+    betterOpenAI.imageTool.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether the bundled Better OpenAI extension registers the agent-callable openai_image tool. The /openai-image command and other extension functionality remain available when disabled.";
+    };
+
     camofoxBrowser = {
       enable = lib.mkOption {
         type = lib.types.bool;
@@ -573,6 +579,9 @@ in
     // lib.optionalAttrs config.pi.gondolin.enable {
       PI_GONDOLIN_ENABLED = "1";
       PI_GONDOLIN_GUEST_MOUNT_PATH = config.pi.gondolin.guestMountPath;
+    }
+    // lib.optionalAttrs config.pi.betterOpenAI.imageTool.enable {
+      PI_BETTER_OPENAI_IMAGE_TOOL = "1";
     }
     // lib.optionalAttrs config.pi.camofoxBrowser.enable (
       {

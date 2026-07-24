@@ -168,7 +168,24 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
 - `pi.splash.*`
 - opt-in integrations under `pi.fff`, `pi.dynamicWorkflows`, `pi.goal`,
   `pi.herdrIntegration`, `pi.mattPocockSkills`, `pi.camofoxBrowser`,
-  `pi.nixOptions`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
+  `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
+
+
+### Better OpenAI image tool
+
+When `better-openai` is included in `pi.bundledExtensions`, its `/openai-image`
+command remains available normally. Enable the agent-callable `openai_image`
+tool separately:
+
+```nix
+{
+  pi.betterOpenAI.imageTool.enable = true;
+}
+```
+
+The tool supports generation and editing with up to five reference image paths
+inside the current workspace. It is disabled by default without affecting fast
+mode, usage reporting, settings, or the command.
 
 ### Nix option lookup
 
