@@ -21,7 +21,7 @@ export const DEFAULT_SUPPORTED_MODELS = ["openai-codex/gpt-5.6-terra", "openai-c
 export const DEFAULT_CONFIG = {
  persistState: true, desiredActive: false, active: false, supportedModels: DEFAULT_SUPPORTED_MODELS,
  usage: { enabled: true, refreshIntervalMs: 60_000, showOnlyOnSubscriptionModels: true, showResetTimes: true },
- image: { enabled: true, defaultModel: "gpt-5.6-sol", defaultSave: "project", outputFormat: "png", timeoutMs: 180_000 },
+ image: { enabled: true, defaultModel: "gpt-5.5", defaultSave: "project", outputFormat: "png", timeoutMs: 180_000 },
 } as const;
 const record = (v: unknown): v is RawConfig => !!v && typeof v === "object" && !Array.isArray(v);
 const bool = (v: unknown, fallback: boolean) => typeof v === "boolean" ? v : fallback;
