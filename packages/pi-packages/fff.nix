@@ -28,17 +28,28 @@ buildNpmPackage rec {
   src = fetchFromGitHub {
     owner = "dmtrKovalenko";
     repo = "fff";
-    rev = "b14c31d137e108b7c520d0d9e0b0017a1a88141d";
-    hash = "sha256-mD0dKKYOtg9qsx5nNepeocQS1HPRWfNcnWM4oQdJ1Ok=";
+    rev = "fde8c52a298a2fa4375edf626e0c37b0400f5a8b";
+    hash = "sha256-0U4LO+svMO5HwT1EJP9L+St5KecMUHzPj0NMSCTCE0U=";
   };
 
-  npmDepsHash = "sha256-SmE7bx3z94hK970k7DzG6O8+iq0xKMNFRoiWYlNO5ME=";
+  npmDepsHash = "sha256-9bDNsPKZILm4dc+2z69xu9nnE07uJUHXcOv20HBb1Ow=";
   npmDepsFetcherVersion = 2;
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit src;
-    hash = "sha256-Nlf2Bxwe5KvZF0unpeK/mMFmv4NM+IKPpFOopXoNRxU=";
+    hash = "sha256-sOE3Zrs/ZtOIusH0+OvR1Ew5sfQfse6eWSLPwDPVSU4=";
   };
+
+  postPatch = ''
+    for file in packages/fff-node/package.json packages/fff-bun/package.json; do
+      substituteInPlace "$file" \
+        --replace-fail \
+          $'    "@ff-labs/fff-bin-win32-arm64": "0.0.0",\n    "@ff-labs/fff-bin-android-arm64": "0.0.0"' \
+          $'    "@ff-labs/fff-bin-win32-arm64": "0.0.0"'
+    done
+    substituteInPlace package-lock.json \
+      --replace-warn $'        "@ff-labs/fff-bin-android-arm64": "0.0.0",\n' ""
+  '';
 
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook

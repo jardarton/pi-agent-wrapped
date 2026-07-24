@@ -293,8 +293,8 @@ in
         default = pkgs.fetchFromGitHub {
           owner = "mattpocock";
           repo = "skills";
-          rev = "391a2701dd948f94f56a39f7533f8eea9a859c87";
-          hash = "sha256-gFPkjrujFAoNXYa0ariPKTj/xBoiCTLUo3X20qrTzRE=";
+          rev = "ed37663cc5fbef691ddfecd080dff42f7e7e350d";
+          hash = "sha256-o/H9s3t6ahBqFwpkOMBOTwpsvb33pgvpI9n0PA+uLYM=";
         };
         description = "Pinned Matt Pocock skills source checkout.";
       };
@@ -399,8 +399,8 @@ in
         default = pkgs.fetchFromGitHub {
           owner = "ogulcancelik";
           repo = "herdr";
-          rev = "64de9279e39cbdce07b97b4ded1ea439ff7192e8";
-          hash = "sha256-xtsu42NqPMUdBG1TmTnA/3KGxsc/TjQacLE9uZj6HW8=";
+          rev = "c0fb777ed7c7950c6a2f397113c1842c2e679306";
+          hash = "sha256-vhG8YWmGkKAps403O15qUc5swKinz7eJxhx/HHH4Ew0=";
         };
         description = "Pinned Herdr source containing the Pi integration extension.";
       };

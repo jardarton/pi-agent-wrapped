@@ -66,7 +66,7 @@ export const FIREWORKS_MODELS = {
 		baseUrl: "https://api.fireworks.ai/inference/v1",
 		compat: {"supportsStore":false,"supportsDeveloperRole":false},
 		reasoning: true,
-		thinkingLevelMap: {"off":"none","minimal":null,"low":"high","medium":"high","max":"max"},
+		thinkingLevelMap: {"off":"none","minimal":null,"low":"high","medium":"high","xhigh":"max"},
 		input: ["text"],
 		cost: {
 			input: 1.4,
@@ -175,7 +175,7 @@ export const FIREWORKS_MODELS = {
 		baseUrl: "https://api.fireworks.ai/inference",
 		compat: {"sendSessionAffinityHeaders":true,"supportsEagerToolInputStreaming":false,"supportsCacheControlOnTools":false,"supportsLongCacheRetention":false},
 		reasoning: true,
-		input: ["text"],
+		input: ["text", "image"],
 		cost: {
 			input: 0.3,
 			output: 1.2,
@@ -229,7 +229,7 @@ export const FIREWORKS_MODELS = {
 		baseUrl: "https://api.fireworks.ai/inference/v1",
 		compat: {"supportsStore":false,"supportsDeveloperRole":false},
 		reasoning: true,
-		thinkingLevelMap: {"off":"none","minimal":null,"low":"high","medium":"high","max":"max"},
+		thinkingLevelMap: {"off":"none","minimal":null,"low":"high","medium":"high","xhigh":"max"},
 		input: ["text"],
 		cost: {
 			input: 2.1,

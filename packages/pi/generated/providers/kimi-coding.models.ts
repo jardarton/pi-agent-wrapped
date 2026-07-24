@@ -4,25 +4,6 @@
 import type { Model } from "../types.ts";
 
 export const KIMI_CODING_MODELS = {
-	"k2p7": {
-		id: "k2p7",
-		name: "Kimi K2.7 Code",
-		api: "anthropic-messages",
-		provider: "kimi-coding",
-		baseUrl: "https://api.kimi.com/coding",
-		headers: {"User-Agent":"KimiCLI/1.5"},
-		compat: {"forceAdaptiveThinking":true},
-		reasoning: true,
-		input: ["text", "image"],
-		cost: {
-			input: 0,
-			output: 0,
-			cacheRead: 0,
-			cacheWrite: 0,
-		},
-		contextWindow: 262144,
-		maxTokens: 32768,
-	} satisfies Model<"anthropic-messages">,
 	"k3": {
 		id: "k3",
 		name: "Kimi K3",
@@ -30,9 +11,7 @@ export const KIMI_CODING_MODELS = {
 		provider: "kimi-coding",
 		baseUrl: "https://api.kimi.com/coding",
 		headers: {"User-Agent":"KimiCLI/1.5"},
-		compat: {"allowEmptySignature":true,"forceAdaptiveThinking":true},
 		reasoning: true,
-		thinkingLevelMap: {"off":null,"minimal":null,"low":null,"medium":null,"high":null,"xhigh":null,"max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 0,
@@ -45,12 +24,11 @@ export const KIMI_CODING_MODELS = {
 	} satisfies Model<"anthropic-messages">,
 	"kimi-for-coding": {
 		id: "kimi-for-coding",
-		name: "Kimi For Coding",
+		name: "Kimi K2.7 Code",
 		api: "anthropic-messages",
 		provider: "kimi-coding",
 		baseUrl: "https://api.kimi.com/coding",
 		headers: {"User-Agent":"KimiCLI/1.5"},
-		compat: {"allowEmptySignature":true,"forceAdaptiveThinking":true},
 		reasoning: true,
 		input: ["text", "image"],
 		cost: {
@@ -69,28 +47,8 @@ export const KIMI_CODING_MODELS = {
 		provider: "kimi-coding",
 		baseUrl: "https://api.kimi.com/coding",
 		headers: {"User-Agent":"KimiCLI/1.5"},
-		compat: {"forceAdaptiveThinking":true},
 		reasoning: true,
 		input: ["text", "image"],
-		cost: {
-			input: 0,
-			output: 0,
-			cacheRead: 0,
-			cacheWrite: 0,
-		},
-		contextWindow: 262144,
-		maxTokens: 32768,
-	} satisfies Model<"anthropic-messages">,
-	"kimi-k2-thinking": {
-		id: "kimi-k2-thinking",
-		name: "Kimi K2 Thinking",
-		api: "anthropic-messages",
-		provider: "kimi-coding",
-		baseUrl: "https://api.kimi.com/coding",
-		headers: {"User-Agent":"KimiCLI/1.5"},
-		compat: {"forceAdaptiveThinking":true},
-		reasoning: true,
-		input: ["text"],
 		cost: {
 			input: 0,
 			output: 0,

@@ -606,6 +606,24 @@ export const AZURE_OPENAI_RESPONSES_MODELS = {
 		contextWindow: 1050000,
 		maxTokens: 128000,
 	} satisfies Model<"azure-openai-responses">,
+	"gpt-5.6": {
+		id: "gpt-5.6",
+		name: "GPT-5.6",
+		api: "azure-openai-responses",
+		provider: "azure-openai-responses",
+		baseUrl: "",
+		reasoning: true,
+		thinkingLevelMap: {"off":null,"xhigh":"xhigh"},
+		input: ["text", "image"],
+		cost: {
+			input: 5,
+			output: 30,
+			cacheRead: 0.5,
+			cacheWrite: 6.25,
+		},
+		contextWindow: 1050000,
+		maxTokens: 128000,
+	} satisfies Model<"azure-openai-responses">,
 	"gpt-5.6-luna": {
 		id: "gpt-5.6-luna",
 		name: "GPT-5.6 Luna",
@@ -613,7 +631,7 @@ export const AZURE_OPENAI_RESPONSES_MODELS = {
 		provider: "azure-openai-responses",
 		baseUrl: "",
 		reasoning: true,
-		thinkingLevelMap: {"off":null,"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"off":null,"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 1,
@@ -631,7 +649,7 @@ export const AZURE_OPENAI_RESPONSES_MODELS = {
 		provider: "azure-openai-responses",
 		baseUrl: "",
 		reasoning: true,
-		thinkingLevelMap: {"off":null,"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"off":null,"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -649,7 +667,7 @@ export const AZURE_OPENAI_RESPONSES_MODELS = {
 		provider: "azure-openai-responses",
 		baseUrl: "",
 		reasoning: true,
-		thinkingLevelMap: {"off":null,"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"off":null,"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 2.5,

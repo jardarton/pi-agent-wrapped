@@ -79,7 +79,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"off":null,"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"off":null,"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 10,
@@ -148,7 +148,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"max":"max"},
+		thinkingLevelMap: {"xhigh":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -166,7 +166,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -184,7 +184,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -219,7 +219,6 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 3,
@@ -237,7 +236,6 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 2,
@@ -272,7 +270,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"max":"max"},
+		thinkingLevelMap: {"xhigh":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 16.5,
@@ -290,7 +288,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -325,7 +323,6 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 3.3,
@@ -343,7 +340,6 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 2,
@@ -412,7 +408,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.eu-central-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"off":null,"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"off":null,"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 11,
@@ -464,7 +460,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.eu-central-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"max":"max"},
+		thinkingLevelMap: {"xhigh":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 5.5,
@@ -482,7 +478,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.eu-central-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 5.5,
@@ -500,7 +496,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.eu-central-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 5.5,
@@ -535,7 +531,6 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.eu-central-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 3.3,
@@ -553,7 +548,6 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.eu-central-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 2.2,
@@ -571,7 +565,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"off":null,"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"off":null,"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 10,
@@ -623,7 +617,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"max":"max"},
+		thinkingLevelMap: {"xhigh":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -641,7 +635,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -659,7 +653,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -694,7 +688,6 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 3,
@@ -712,7 +705,6 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 2,
@@ -781,7 +773,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -799,7 +791,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -834,7 +826,6 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 3,
@@ -852,7 +843,6 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 2,
@@ -1572,7 +1562,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"off":null,"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"off":null,"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 10,
@@ -1641,7 +1631,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"max":"max"},
+		thinkingLevelMap: {"xhigh":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -1659,7 +1649,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -1677,7 +1667,7 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
+		thinkingLevelMap: {"xhigh":"xhigh"},
 		input: ["text", "image"],
 		cost: {
 			input: 5,
@@ -1712,7 +1702,6 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 3,
@@ -1730,7 +1719,6 @@ export const AMAZON_BEDROCK_MODELS = {
 		provider: "amazon-bedrock",
 		baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
 		reasoning: true,
-		thinkingLevelMap: {"xhigh":"xhigh","max":"max"},
 		input: ["text", "image"],
 		cost: {
 			input: 2,
