@@ -56,10 +56,20 @@ let
     ) bundledExtensionNames
   );
   gondolinExtensionPath = bundledExtensionPath "gondolin";
-  splashLogoTextJson = builtins.toJSON config.pi.splash.logoText;
-  splashVersionTextJson = builtins.toJSON config.pi.splash.versionText;
-  splashCompactHelpTextJson = builtins.toJSON config.pi.splash.compactHelpText;
-  splashHelpTextJson = builtins.toJSON config.pi.splash.helpText;
+  # Patching the splash rewrites Pi's own JavaScript, so it has to be done in the
+  # package derivation rather than the wrapper output; see packages/pi/package.nix.
+  # `null` leaves Pi's upstream splash alone and keeps the package identical to the
+  # plain `.#pi` build.
+  splashArgs =
+    if config.pi.splash.enable then
+      {
+        logoText = builtins.toJSON config.pi.splash.logoText;
+        versionText = builtins.toJSON config.pi.splash.versionText;
+        compactHelpText = builtins.toJSON config.pi.splash.compactHelpText;
+        helpText = builtins.toJSON config.pi.splash.helpText;
+      }
+    else
+      null;
   mattPocockSkillsPackage = pkgs.runCommand "pi-package-mattpocock-skills" { } ''
     set -euo pipefail
 
@@ -545,6 +555,20 @@ in
     };
 
     splash = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = ''
+          Whether to replace Pi's launch splash with the `pi.splash.*` text below.
+
+          Off by default for two reasons. It rewrites Pi's built JavaScript by
+          matching literal upstream source strings, so an upstream edit to any of
+          them turns into a hard build failure; leaving it off keeps that risk
+          opt-in. It also has to be applied inside the Pi derivation, so enabling
+          it builds a second Pi from source alongside the plain `.#pi` package.
+        '';
+      };
+
       logoText = lib.mkOption {
         type = lib.types.str;
         default = ''
@@ -579,7 +603,7 @@ in
   };
 
   config = {
-    package = lib.mkDefault piPackages.pi;
+    package = lib.mkDefault (piPackages.pi.override { splashPatch = splashArgs; });
     binName = lib.mkDefault "p";
 
     meta = {
@@ -668,39 +692,6 @@ in
       "bin/pi"
       "bin/.pi-wrapped"
     ];
-
-    drv.postBuild = ''
-      interactive_mode="$out/lib/node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/interactive-mode.js"
-      if [ ! -f "$interactive_mode" ]; then
-        echo "pi-wrapped splash patch: interactive-mode.js not found at expected path; upstream layout changed" >&2
-        exit 1
-      fi
-      splash_require() {
-        grep -qF -e "$1" "$interactive_mode" || {
-          echo "pi-wrapped splash patch: marker for $2 not found; upstream source changed" >&2
-          exit 1
-        }
-      }
-      splash_forbid() {
-        if grep -qF -e "$1" "$interactive_mode"; then
-          echo "pi-wrapped splash patch: substitution for $2 did not apply" >&2
-          exit 1
-        fi
-      }
-      splash_require 'theme.fg("accent", APP_NAME)' "splash logo"
-      splash_require 'Press ''${keyText("app.tools.expand")} to show full startup help' "compact splash help"
-      splash_require 'theme.fg("dim", `Pi can explain its own features' "splash help"
-      splash_logo_text=${lib.escapeShellArg splashLogoTextJson}
-      splash_version_text=${lib.escapeShellArg splashVersionTextJson}
-      splash_compact_help_text=${lib.escapeShellArg splashCompactHelpTextJson}
-      splash_help_text=${lib.escapeShellArg splashHelpTextJson}
-      SPLASH_LOGO_TEXT="$splash_logo_text" SPLASH_VERSION_TEXT="$splash_version_text" ${pkgs.perl}/bin/perl -0pi -e 's/const logo = theme\.bold\(theme\.fg\("accent", APP_NAME\)\) \+ theme\.fg\("dim", ` v\$\{this\.version\}`\);/const logo = theme.bold(theme.fg("accent", $ENV{SPLASH_LOGO_TEXT})) + ($ENV{SPLASH_VERSION_TEXT} === "null" ? "" : theme.fg("dim", $ENV{SPLASH_VERSION_TEXT}.replace("{version}", this.version)));/' "$interactive_mode"
-      SPLASH_COMPACT_HELP_TEXT="$splash_compact_help_text" ${pkgs.perl}/bin/perl -0pi -e 's/const compactOnboarding = theme\.fg\("dim", `Press \$\{keyText\("app\.tools\.expand"\)\} to show full startup help and loaded resources\.`\);/const compactOnboarding = theme.fg("dim", $ENV{SPLASH_COMPACT_HELP_TEXT}.replace("{expandKey}", keyText("app.tools.expand")));/' "$interactive_mode"
-      SPLASH_HELP_TEXT="$splash_help_text" ${pkgs.perl}/bin/perl -0pi -e 's/const onboarding = theme\.fg\("dim", `Pi can explain its own features and look up its docs\. Ask it how to use or extend Pi\.`\);/const onboarding = theme.fg("dim", $ENV{SPLASH_HELP_TEXT});/' "$interactive_mode"
-      splash_forbid 'theme.fg("accent", APP_NAME)' "splash logo"
-      splash_forbid 'Press ''${keyText("app.tools.expand")} to show full startup help' "compact splash help"
-      splash_forbid 'theme.fg("dim", `Pi can explain its own features' "splash help"
-    '';
 
     constructFiles.generatedSettings = {
       relPath = "share/pi-wrapped/settings.json";
