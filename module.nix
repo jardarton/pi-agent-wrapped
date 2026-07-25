@@ -5,7 +5,7 @@ inputs:
   pkgs,
   wlib,
   ...
-}:
+}@top:
 let
   jsonFmtType = wlib.types.structuredValueWith { typeName = "JSON"; };
   localSkillsDir = pkgs.runCommand "pi-wrapped-skills" { } ''
@@ -25,11 +25,15 @@ let
     themes = ./themes;
     extensions = ./extensions;
   };
-  agentTools = pkgs.callPackage ./packages/pi-agent-tools.nix { };
-  piResources = pkgs.callPackage ./packages/pi-resources.nix { piPackage = config.package; };
-  fffPackage = pkgs.callPackage ./packages/pi-packages/fff.nix { };
-  dynamicWorkflowsPackage = pkgs.callPackage ./packages/pi-packages/dynamic-workflows.nix { };
-  codexGoalPackage = pkgs.callPackage ./packages/pi-packages/codex-goal.nix { };
+  piPackages = import ./packages {
+    inherit pkgs;
+    piPackage = config.package;
+  };
+  agentTools = piPackages.pi-agent-tools;
+  piResources = piPackages.pi-resources;
+  fffPackage = piPackages.pi-fff;
+  dynamicWorkflowsPackage = piPackages.pi-dynamic-workflows;
+  codexGoalPackage = piPackages.pi-codex-goal;
   bundledExtensionPath = name: "${piResources}/share/pi-resources/extensions/${name}.ts";
   bundledExtensionNames = [
     "better-openai"
@@ -139,10 +143,10 @@ let
       "${piResources}/share/pi-resources/extensions/nix-options.ts"
     ]
     ++ resourcePackageResources "extensions"
-  ++ lib.optionals config.pi.herdrIntegration.enable [
-    herdrPiExtension
-    (bundledExtensionPath "herdr-terminal-images")
-  ];
+    ++ lib.optionals config.pi.herdrIntegration.enable [
+      herdrPiExtension
+      (bundledExtensionPath "herdr-terminal-images")
+    ];
   herdrPiExtension = "${config.pi.herdrIntegration.source}/src/integration/assets/pi/herdr-agent-state.ts";
   mattPocockResourcePackage = lib.optional config.pi.mattPocockSkills.enable {
     package = mattPocockSkillsPackage;
@@ -376,7 +380,14 @@ in
           settings
         else
           throw "pi.settings contains reserved generated keys: ${lib.concatStringsSep ", " conflicts}";
-      description = "Extra declarative Pi settings merged into generated settings.json. Generated model, security, and resource keys are reserved; configure those through their dedicated pi options.";
+      description = ''
+        Extra declarative Pi settings merged into generated settings.json. Generated
+        model, security, and resource keys are reserved; configure those through their
+        dedicated pi options.
+
+        The generated `settings.json` is copied into the profile directory on every
+        launch, so hand-edits to that file are discarded.
+      '';
     };
 
     keybindings = lib.mkOption {
@@ -388,7 +399,12 @@ in
           "ctrl+p"
         ];
       };
-      description = "Declarative Pi keybindings written to generated keybindings.json.";
+      description = ''
+        Declarative Pi keybindings written to generated keybindings.json.
+
+        Copied into the profile directory on every launch, so hand-edits to that file
+        are discarded.
+      '';
     };
 
     herdrIntegration = {
@@ -439,7 +455,24 @@ in
         ];
         default = "tool";
         example = "skill";
-        description = "How to expose Librarian. `tool` registers the deterministic librarian tool and hides the librarian skill; `skill` exposes the librarian skill and does not load the tool.";
+        description = ''
+          How to expose Librarian.
+
+          `tool` loads the deterministic librarian tool, which additionally requires
+          `librarian` in `pi.bundledExtensions`, and removes any `librarian` entry from
+          `pi.localSkills` so the skill does not shadow the tool. Listing `librarian` in
+          `pi.localSkills` alongside this mode is therefore harmless and has no effect.
+
+          `skill` exposes the librarian skill from `pi.localSkills` and never loads the
+          tool. Requesting the `librarian` extension in that mode is an error rather than
+          a silently dropped extension.
+        '';
+        apply =
+          mode:
+          if mode == "skill" && builtins.elem "librarian" config.pi.bundledExtensions then
+            throw "pi.librarian.mode = \"skill\" cannot be combined with \"librarian\" in pi.bundledExtensions: the librarian tool is not loaded in skill mode. Remove it from pi.bundledExtensions, or set pi.librarian.mode = \"tool\"."
+          else
+            mode;
       };
     };
 
@@ -497,7 +530,12 @@ in
     appendSystemPrompt = lib.mkOption {
       type = lib.types.lines;
       default = "";
-      description = "Markdown written to profile-local `APPEND_SYSTEM.md` under `PI_CODING_AGENT_DIR`.";
+      description = ''
+        Markdown written to profile-local `APPEND_SYSTEM.md` under `PI_CODING_AGENT_DIR`.
+
+        Copied into the profile directory on every launch, so hand-edits to that file
+        are discarded. The same applies to the generated `AGENTS.md`.
+      '';
     };
 
     overrideSystemPrompt = lib.mkOption {
@@ -541,8 +579,18 @@ in
   };
 
   config = {
-    package = lib.mkDefault (pkgs.callPackage ./packages/pi { });
+    package = lib.mkDefault piPackages.pi;
     binName = lib.mkDefault "p";
+
+    meta = {
+      description = "Declarative, configurable Pi coding-agent wrapper";
+      platforms = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
+    };
 
     install.modules =
       let
@@ -552,7 +600,10 @@ in
           {
             config =
               let
-                cfg = config.wrappers.pi;
+                # Resolve the wrapper config through the documented accessor rather than a
+                # hardcoded `config.wrappers.pi`, so this keeps working at whatever
+                # `install.optionLocation` the module was instantiated at.
+                cfg = top.config.install.getWrapperConfig config;
                 launcherOnly = cfg.pkgs.runCommand "${cfg.binName}-launcher-only" { } ''
                   mkdir -p "$out/bin"
                   ln -s "${cfg.wrapper}/bin/${cfg.binName}" "$out/bin/${cfg.binName}"
@@ -604,13 +655,21 @@ in
 
     runtimePkgs = [
       agentTools
-      pkgs.python3
     ]
+    # Only the session-reader skill needs an interpreter. Consumers that want
+    # Python available to the agent regardless can add it to `runtimePkgs`.
+    ++ lib.optionals (builtins.elem "session-reader" config.pi.localSkills) [ pkgs.python3 ]
     ++ lib.optionals config.pi.nixOptions.enable [ pkgs.nix ];
 
-    drv.postBuild = ''
-      rm -f "$out/bin/pi" "$out/bin/.pi-wrapped"
+    # Drop the unwrapped upstream entrypoints so only the configured launcher is
+    # exposed. `bin/.pi-wrapped` is the original binary displaced by the Pi
+    # package's own `wrapProgram`.
+    filesToExclude = [
+      "bin/pi"
+      "bin/.pi-wrapped"
+    ];
 
+    drv.postBuild = ''
       interactive_mode="$out/lib/node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/interactive-mode.js"
       if [ ! -f "$interactive_mode" ]; then
         echo "pi-wrapped splash patch: interactive-mode.js not found at expected path; upstream layout changed" >&2
@@ -674,26 +733,11 @@ in
 
     constructFiles.generatedAgents = {
       relPath = "share/pi-wrapped/AGENTS.md";
+      # Single-sourced with the repository's own AGENTS.md, which links to the same file.
       content = ''
         # Agent instructions
 
-        ## Pi-native child processes
-
-        `PI_LAUNCHER_BIN` is the authoritative identity of the currently active Pi wrapper. Pi-native features that fork, resume, or create a child of the active Pi session must reuse this exact launcher. This includes split/fork, explore, and similar extension-managed child sessions.
-
-        Do not resolve a profile name from `PATH` or fall back to `process.execPath` for these Pi-native descendants. If `PI_LAUNCHER_BIN` is unavailable, fail instead of guessing.
-
-        This invariant does not apply to root launchers, generic orchestrators, configured commands, arbitrary shell commands, or explicit profile selection. Those may run any command selected by their user or configuration.
-
-        `run-current-pi` is an optional convenience for manually re-executing the active wrapper.
-
-        Examples:
-
-        ```sh
-        run-current-pi
-        run-current-pi --session /path/to/session.jsonl
-        herdr pane run "$PANE" "run-current-pi --session '/path/to/session.jsonl'"
-        ```
+        ${builtins.readFile ./docs/pi-native-children.md}
       '';
     };
 
@@ -707,7 +751,10 @@ in
     };
 
     runShell = [
-      ''
+      # Gondolin image discovery can shell out to `nix build`, so it must only run
+      # for profiles that actually enable Gondolin. Emitting it unconditionally made
+      # every launch inside any flake directory pay for a Nix evaluation.
+      (lib.optionalString config.pi.gondolin.enable ''
         configured_gondolin_image_path=${
           if config.pi.gondolin.imagePath == null then
             "''"
@@ -736,6 +783,11 @@ in
           return 1
         }
 
+        if resolved_gondolin_image_path="$(resolve_gondolin_image_path)"; then
+          export GONDOLIN_IMAGE_PATH="$resolved_gondolin_image_path"
+        fi
+      '')
+      ''
         profile_name=${lib.escapeShellArg config.pi.profileName}
         profile_dir="${config.pi.stateRoot}/$profile_name"
         mkdir -p "$profile_dir" "$profile_dir/sessions"
@@ -768,9 +820,6 @@ in
         export PI_CODING_AGENT_DIR="$profile_dir"
         export PI_PACKAGE_DIR="${config.package}/lib/node_modules/@earendil-works/pi-coding-agent"
         export PI_CODING_AGENT_SESSION_DIR="$profile_dir/sessions"
-        if resolved_gondolin_image_path="$(resolve_gondolin_image_path)"; then
-          export GONDOLIN_IMAGE_PATH="$resolved_gondolin_image_path"
-        fi
       ''
     ];
   };

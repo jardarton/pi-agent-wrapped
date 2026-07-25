@@ -65,15 +65,17 @@ buildNpmPackage {
     chmod +x $out/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js
     ln -s $out/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js $out/bin/pi
 
+    # Only runtime dependencies belong here. Behavioural defaults such as
+    # PI_SKIP_VERSION_CHECK and PI_TELEMETRY are set by the wrapper module's
+    # `envDefault`, where they stay overridable; a `--set` here would win over the
+    # wrapper and make those options unreachable.
     wrapProgram $out/bin/pi \
       --prefix PATH : ${
         lib.makeBinPath [
           fd
           ripgrep
         ]
-      } \
-      --set PI_SKIP_VERSION_CHECK 1 \
-      --set PI_TELEMETRY 0
+      }
 
     runHook postInstall
   '';

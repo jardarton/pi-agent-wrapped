@@ -37,6 +37,10 @@ pkgs.runCommand "pi-profile-${profileName}-launchers"
       fullPackage = wrapped;
       inherit profileName binName aliases;
     };
+    meta = (wrapped.meta or { }) // {
+      description = "Pi wrapper launchers for the ${profileName} profile";
+      mainProgram = binName;
+    };
   }
   ''
     mkdir -p "$out/bin"

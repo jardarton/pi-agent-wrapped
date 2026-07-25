@@ -20,14 +20,14 @@ rev=$(git ls-remote https://github.com/dmtrKovalenko/fff HEAD | awk '{print $1}'
 Then update `rev` in `packages/pi-packages/fff.nix`, temporarily replace the source `hash`, `npmDepsHash`, and `cargoDeps.hash` with `lib.fakeHash`, and run:
 
 ```bash
-nix build .#pi-fff --allow-import-from-derivation
+nix build .#pi-fff
 ```
 
 Nix will print each expected hash. Replace the fake hashes, then run:
 
 ```bash
 nix fmt
-nix build .#p .#pi-fff --allow-import-from-derivation
+nix build .#p .#pi-fff
 ```
 
 Sanity checks:
@@ -99,8 +99,8 @@ Then update `rev` and `hash` in `module.nix`, run:
 
 ```bash
 nix fmt
-nix flake show --allow-import-from-derivation
-nix build .#p --allow-import-from-derivation
+nix flake show
+nix build .#p
 ```
 
 Optional sanity check: inspect generated settings and confirm `extensions` contains the Herdr store path ending in `src/integration/assets/pi/herdr-agent-state.ts`.
@@ -143,8 +143,22 @@ Afterwards run:
 
 ```bash
 nix fmt
-nix flake show --allow-import-from-derivation
-nix build .#pi --allow-import-from-derivation
+nix flake show
+nix flake check
+```
+
+This is the only option in the repository that needs import-from-derivation: the
+default `pi.mattPocockSkills.skills` discovers its skill list with `builtins.readDir`
+on the fetched source. Nothing else does, so the flag is only required when actually
+evaluating a wrapper with the option enabled:
+
+```bash
+nix eval --allow-import-from-derivation --impure --raw --expr \
+  'let f = builtins.getFlake (toString ./.); in
+   (f.wrappers.pi.wrap {
+     pkgs = import f.inputs.nixpkgs { system = builtins.currentSystem; };
+     pi.mattPocockSkills.enable = true;
+   }).drvPath'
 ```
 
 ## Cheap model fallbacks
