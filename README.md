@@ -167,7 +167,7 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
 - `pi.localSkills`, `pi.bundledExtensions`
 - `pi.resourcePackages`, `pi.packages`
 - `pi.appendSystemPrompt`, `pi.overrideSystemPrompt`
-- `pi.splash.*`
+- `pi.splash.enable` and `pi.splash.*` (see below)
 - opt-in integrations under `pi.fff`, `pi.dynamicWorkflows`, `pi.goal`,
   `pi.herdrIntegration`, `pi.mattPocockSkills`, `pi.camofoxBrowser`,
   `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
@@ -194,6 +194,27 @@ tool separately:
 The tool supports generation and editing with up to five reference image paths
 inside the current workspace. It is disabled by default without affecting fast
 mode, usage reporting, settings, or the command.
+
+### Launch splash
+
+`pi.splash.enable` replaces Pi's launch splash with the `pi.splash.*` text. It is
+off by default:
+
+```nix
+{
+  pi.splash.enable = true;
+  pi.splash.helpText = "Ask me anything.";
+}
+```
+
+The substitution rewrites Pi's built JavaScript by matching literal upstream
+source strings, and it has to happen inside the Pi derivation rather than in the
+wrapper output — the launcher execs `${pi}/bin/pi`, and Node resolves modules from
+that script's realpath, so a patched copy in the wrapper is never loaded. Two
+consequences: an upstream edit to any of the matched strings becomes a hard build
+failure, and enabling this builds a second Pi from source alongside the plain
+`.#pi` package. With it disabled the wrapper's Pi and `.#pi` are the same
+derivation.
 
 ### Nix option lookup
 

@@ -4,6 +4,17 @@
   fetchFromGitHub,
   fd,
   ripgrep,
+  perl,
+  # Splash text substitutions, or null to leave Pi's own splash untouched.
+  #
+  # This has to happen inside the package build: the launcher execs
+  # `${pi}/bin/pi`, and Node resolves the interactive-mode module from that
+  # script's realpath, so patching a copy in the wrapper output has no effect on
+  # what actually runs.
+  #
+  # Expects { logoText, versionText, compactHelpText, helpText }, each already
+  # JSON-encoded (versionText may be the JSON literal `null` to hide it).
+  splashPatch ? null,
 }:
 
 let
@@ -61,6 +72,39 @@ buildNpmPackage {
 
     cp -R node_modules/. $out/lib/node_modules/
     cp -R packages/{agent,ai,coding-agent,orchestrator,tui} $out/lib/packages/
+
+    ${lib.optionalString (splashPatch != null) ''
+      interactive_mode="$out/lib/packages/coding-agent/dist/modes/interactive/interactive-mode.js"
+      if [ ! -f "$interactive_mode" ]; then
+        echo "pi splash patch: interactive-mode.js not found at expected path; upstream layout changed" >&2
+        exit 1
+      fi
+      splash_require() {
+        grep -qF -e "$1" "$interactive_mode" || {
+          echo "pi splash patch: marker for $2 not found; upstream source changed" >&2
+          exit 1
+        }
+      }
+      splash_forbid() {
+        if grep -qF -e "$1" "$interactive_mode"; then
+          echo "pi splash patch: substitution for $2 did not apply" >&2
+          exit 1
+        fi
+      }
+      splash_require 'theme.fg("accent", APP_NAME)' "splash logo"
+      splash_require 'Press ''${keyText("app.tools.expand")} to show full startup help' "compact splash help"
+      splash_require 'theme.fg("dim", `Pi can explain its own features' "splash help"
+      SPLASH_LOGO_TEXT=${lib.escapeShellArg splashPatch.logoText} \
+      SPLASH_VERSION_TEXT=${lib.escapeShellArg splashPatch.versionText} \
+        ${perl}/bin/perl -0pi -e 's/const logo = theme\.bold\(theme\.fg\("accent", APP_NAME\)\) \+ theme\.fg\("dim", ` v\$\{this\.version\}`\);/const logo = theme.bold(theme.fg("accent", $ENV{SPLASH_LOGO_TEXT})) + ($ENV{SPLASH_VERSION_TEXT} === "null" ? "" : theme.fg("dim", $ENV{SPLASH_VERSION_TEXT}.replace("{version}", this.version)));/' "$interactive_mode"
+      SPLASH_COMPACT_HELP_TEXT=${lib.escapeShellArg splashPatch.compactHelpText} \
+        ${perl}/bin/perl -0pi -e 's/const compactOnboarding = theme\.fg\("dim", `Press \$\{keyText\("app\.tools\.expand"\)\} to show full startup help and loaded resources\.`\);/const compactOnboarding = theme.fg("dim", $ENV{SPLASH_COMPACT_HELP_TEXT}.replace("{expandKey}", keyText("app.tools.expand")));/' "$interactive_mode"
+      SPLASH_HELP_TEXT=${lib.escapeShellArg splashPatch.helpText} \
+        ${perl}/bin/perl -0pi -e 's/const onboarding = theme\.fg\("dim", `Pi can explain its own features and look up its docs\. Ask it how to use or extend Pi\.`\);/const onboarding = theme.fg("dim", $ENV{SPLASH_HELP_TEXT});/' "$interactive_mode"
+      splash_forbid 'theme.fg("accent", APP_NAME)' "splash logo"
+      splash_forbid 'Press ''${keyText("app.tools.expand")} to show full startup help' "compact splash help"
+      splash_forbid 'theme.fg("dim", `Pi can explain its own features' "splash help"
+    ''}
 
     chmod +x $out/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js
     ln -s $out/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js $out/bin/pi
