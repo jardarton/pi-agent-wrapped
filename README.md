@@ -23,9 +23,11 @@ consumer's configuration. All defaults and default flake aliases are neutral.
 | `homeModules.pi` / `homeModules.default` | Generic Home Manager multi-profile module |
 | `homeModules.wrapper` | Low-level single-wrapper install module |
 | `nixosModules.pi` / `nixosModules.default` | Low-level generic wrapper install module |
+| `darwinModules.*` | Alias of `nixosModules`; the install module dispatches on the target `_class` |
 | `packages.<system>.p` | Neutral wrapped Pi launcher |
 | `packages.<system>.pi-wrapped` | Full neutral wrapper package |
 | `packages.<system>.pi` | Unwrapped source-built Pi package |
+| `checks.<system>` | `extensions` (typecheck plus extension tests) and `launcher` (neutral wrapper build) |
 
 `homeManagerModules` is an alias of `homeModules` for consumers that prefer the
 conventional output name.
@@ -227,6 +229,9 @@ The launcher sets:
 - `PI_CODING_AGENT_SESSION_DIR`
 - `PI_SKIP_VERSION_CHECK=1`
 - `PI_TELEMETRY=0`
+
+The last two are `envDefault`, so an existing value in the environment wins. Set them
+through `env` instead if a profile needs them pinned regardless of the caller.
 
 Pi-native child processes must reuse the exact `PI_LAUNCHER_BIN`; they must fail
 rather than guess another profile launcher.

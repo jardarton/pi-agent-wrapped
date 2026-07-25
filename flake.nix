@@ -47,15 +47,8 @@
         let
           pkgs = import nixpkgs { inherit system; };
         in
-        rec {
-          pi = pkgs.callPackage ./packages/pi { };
-          pi-agent-tools = pkgs.callPackage ./packages/pi-agent-tools.nix { };
-          pi-resources = pkgs.callPackage ./packages/pi-resources.nix {
-            piPackage = pi;
-          };
-          pi-fff = pkgs.callPackage ./packages/pi-packages/fff.nix { };
-          pi-dynamic-workflows = pkgs.callPackage ./packages/pi-packages/dynamic-workflows.nix { };
-          pi-codex-goal = pkgs.callPackage ./packages/pi-packages/codex-goal.nix { };
+        import ./packages { inherit pkgs; }
+        // rec {
           pi-wrapped = self.wrappers.pi.wrap { inherit pkgs; };
           p = self.lib.mkProfile {
             inherit pkgs;
@@ -82,14 +75,30 @@
         default = self.nixosModules.pi;
       };
 
+      # The install module dispatches on the target evaluation's `_class`, so the
+      # same value serves nixos, home-manager and nix-darwin.
+      darwinModules = self.nixosModules;
+
       homeModules = {
         pi = homeManagerModule;
-        profiles = homeManagerModule;
         wrapper = self.nixosModules.pi;
         default = self.homeModules.pi;
       };
 
       homeManagerModules = self.homeModules;
+
+      # `pi-resources` runs `npm run check` (typecheck plus the extension test
+      # suite) during its build, and `p` exercises the full wrapper pipeline.
+      checks = forEachSystem (
+        system:
+        let
+          inherit (self.packages.${system}) pi-resources p;
+        in
+        {
+          extensions = pi-resources;
+          launcher = p;
+        }
+      );
 
       devShells = forEachSystem (
         system:

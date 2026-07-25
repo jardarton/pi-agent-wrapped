@@ -1,6 +1,8 @@
 result
 result-*
 .pi/
+# Repo-local Pi skills are tracked; mutable Pi state under .pi/ is not.
+!.pi/skills/
 
 plans/
 
