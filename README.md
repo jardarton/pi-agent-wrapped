@@ -179,6 +179,42 @@ images. In a pane with `HERDR_ENV=1`, the shim enables only pi-tui's Kitty image
 capability and preserves all other detected capabilities. It has no effect
 outside Herdr. `terminal.showImages` must still be enabled for images to render.
 
+### Camofox scoped snapshots
+
+With `pi.camofoxBrowser.enable = true`, `camofox_snapshot` can return only an
+accessibility subtree instead of spending model context on the whole page:
+
+```json
+{
+  "tabId": "...",
+  "scope": {
+    "role": "region",
+    "name": "More like this",
+    "exact": true
+  },
+  "maxDepth": 4,
+  "compact": true,
+  "roles": ["article", "link"],
+  "includeText": true,
+  "includeUrls": true
+}
+```
+
+`scope` accepts exactly one of `ref` or `role`; role scopes may also specify
+`name`, `exact`, and a zero-based `occurrence`. Ambiguous role/name matches are
+rejected unless `occurrence` is provided. The tool searches paginated source
+snapshots automatically, preserves usable `eN` refs, and refuses to return a
+subtree that Camofox split across a pagination boundary.
+
+With `compact = true`, the tool emits structured items rather than snapshot
+YAML. `roles` filters those items, while `includeText` and `includeUrls` control
+whether descendant text and URL context is included.
+
+CSS selector scopes are intentionally not exposed: Camofox currently returns
+only a whole-page accessibility snapshot, and correlating arbitrary DOM
+selectors with that tree client-side can select the wrong element. Reliable CSS
+scoping requires server-side support in Camofox.
+
 ### Better OpenAI image tool
 
 When `better-openai` is included in `pi.bundledExtensions`, its `/openai-image`
