@@ -13,15 +13,21 @@
  *   PI_TREE_SUMMARY_FALLBACK_MODELS=...
  *   PI_COMPACTION_MODEL=...
  *   PI_COMPACTION_FALLBACK_MODELS=...
+ *
+ * Either override can be disabled independently with:
+ *   PI_TREE_SUMMARY_MODEL_ENABLED=0
+ *   PI_COMPACTION_MODEL_ENABLED=0
  */
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { compact, generateBranchSummary } from "@earendil-works/pi-coding-agent";
 import { streamSimple } from "@earendil-works/pi-ai/compat";
+import { featureEnabled } from "./lib/feature-enabled";
 import { resolveCheapModel } from "./lib/model-selection";
 
 export default function (pi: ExtensionAPI) {
-	pi.on("session_before_tree", async (event, ctx) => {
+	if (featureEnabled("PI_TREE_SUMMARY_MODEL_ENABLED"))
+		pi.on("session_before_tree", async (event, ctx) => {
 		const { preparation, signal, streamFn } = event as typeof event & {
 			streamFn: Parameters<typeof generateBranchSummary>[1]["streamFn"];
 		};
@@ -80,9 +86,10 @@ export default function (pi: ExtensionAPI) {
 			ctx.ui.notify(`Tree summary extension failed: ${message}; using default summarizer.`, "warning");
 			return;
 		}
-	});
+		});
 
-	pi.on("session_before_compact", async (event, ctx) => {
+	if (featureEnabled("PI_COMPACTION_MODEL_ENABLED"))
+		pi.on("session_before_compact", async (event, ctx) => {
 		const { preparation, customInstructions, signal } = event;
 		const selected = await resolveCheapModel(ctx, {
 			primaryEnv: "PI_COMPACTION_MODEL",
@@ -115,5 +122,5 @@ export default function (pi: ExtensionAPI) {
 			ctx.ui.notify(`Cheap-model compaction failed: ${message}; using default compaction model.`, "warning");
 			return;
 		}
-	});
+		});
 }

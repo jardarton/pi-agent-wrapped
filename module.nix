@@ -535,6 +535,18 @@ in
         ];
         description = "Fallback cheap models exported as `PI_CHEAP_FALLBACK_MODELS` for shared explore/tree/compaction model selection.";
       };
+
+      treeSummary.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Whether the bundled tree-summary-model extension overrides Pi's /tree summarizer with cheap-model selection.";
+      };
+
+      compaction.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Whether the bundled tree-summary-model extension overrides Pi's session compaction model with cheap-model selection.";
+      };
     };
 
     appendSystemPrompt = lib.mkOption {
@@ -654,6 +666,8 @@ in
     envDefault = {
       PI_SKIP_VERSION_CHECK = "1";
       PI_TELEMETRY = "0";
+      PI_TREE_SUMMARY_MODEL_ENABLED = if config.pi.cheapModels.treeSummary.enable then "1" else "0";
+      PI_COMPACTION_MODEL_ENABLED = if config.pi.cheapModels.compaction.enable then "1" else "0";
     }
     // lib.optionalAttrs config.pi.gondolin.enable {
       PI_GONDOLIN_ENABLED = "1";
