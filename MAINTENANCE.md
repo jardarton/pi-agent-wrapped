@@ -179,6 +179,8 @@ Wrapper users can also set shared cheap-model env vars declaratively through:
 
 - `pi.cheapModels.primary`
 - `pi.cheapModels.fallbacks`
+- `pi.cheapModels.treeSummary.enable`
+- `pi.cheapModels.compaction.enable`
 
 
 ## Pi package

@@ -172,6 +172,11 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
   `pi.herdrIntegration`, `pi.mattPocockSkills`, `pi.camofoxBrowser`,
   `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
 
+When `tree-summary-model` is listed in `pi.bundledExtensions`, its two overrides
+can be controlled independently with `pi.cheapModels.treeSummary.enable` and
+`pi.cheapModels.compaction.enable`. Both default to `true` for compatibility;
+setting one to `false` leaves that operation to Pi's built-in implementation.
+
 When `pi.herdrIntegration.enable` is enabled, the wrapper also loads a narrowly
 scoped terminal-capability shim. Herdr forwards Kitty graphics sequences while
 presenting child PTYs as `TERM=xterm-256color`, which makes pi-tui disable inline
