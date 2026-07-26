@@ -42,6 +42,14 @@ type ToolCtx = Parameters<
 >[4];
 type AnyParams = Record<string, any>;
 
+type SnapshotScope = {
+  ref?: string;
+  role?: string;
+  name?: string;
+  exact?: boolean;
+  occurrence?: number;
+};
+
 const CAMOFOX_LOADER_TOOL = "search_camofox_tools";
 const CAMOFOX_EAGER_TOOLS = new Set([
   "camofox_create_tab",
@@ -106,6 +114,197 @@ function timeoutMs() {
 function requestSignal(signal?: AbortSignal) {
   const timeout = AbortSignal.timeout(timeoutMs());
   return signal ? AbortSignal.any([signal, timeout]) : timeout;
+}
+
+function decodeSnapshotName(raw: string | undefined) {
+  if (raw === undefined) return undefined;
+  try {
+    return JSON.parse(`"${raw}"`) as string;
+  } catch {
+    return raw.replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+  }
+}
+
+function snapshotLine(line: string) {
+  const match = line.match(/^(\s*)-\s+([a-zA-Z][\w-]*)(?:\s+"((?:\\.|[^"])*)")?/);
+  if (!match) return undefined;
+  return {
+    indent: match[1].length,
+    role: match[2].toLowerCase(),
+    name: decodeSnapshotName(match[3]),
+  };
+}
+
+function validateSnapshotScope(scope: SnapshotScope | undefined) {
+  if (!scope) return undefined;
+  const targets = [scope.ref, scope.role].filter(
+    (value) => typeof value === "string" && value.trim().length > 0,
+  );
+  if (targets.length !== 1) {
+    throw new Error("snapshot scope requires exactly one of ref or role");
+  }
+  if (
+    (scope.name !== undefined ||
+      scope.exact !== undefined ||
+      scope.occurrence !== undefined) &&
+    !scope.role
+  ) {
+    throw new Error(
+      "snapshot scope name, exact, and occurrence are only valid with role",
+    );
+  }
+  return scope;
+}
+
+function matchingSnapshotLines(
+  snapshot: string,
+  scope: SnapshotScope,
+) {
+  const lines = snapshot.split("\n");
+  if ("ref" in scope && scope.ref) {
+    const escaped = scope.ref.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const refPattern = new RegExp(`\\[${escaped}\\](?=[:\\s]|$)`);
+    return {
+      lines,
+      matches: lines.flatMap((line, index) =>
+        refPattern.test(line) ? [index] : []),
+    };
+  }
+
+  const role = scope.role?.trim().toLowerCase();
+  const expectedName = scope.name?.trim().toLowerCase();
+  const exact = scope.exact ?? false;
+  return {
+    lines,
+    matches: lines.flatMap((line, index) => {
+      const parsed = snapshotLine(line);
+      if (!parsed || parsed.role !== role) return [];
+      if (expectedName === undefined) return [index];
+      const actualName = parsed.name?.trim().toLowerCase() ?? "";
+      const matchesName = exact
+        ? actualName === expectedName
+        : actualName.includes(expectedName);
+      return matchesName ? [index] : [];
+    }),
+  };
+}
+
+export function scopeAccessibilitySnapshot(
+  snapshot: string,
+  scope: SnapshotScope,
+  maxDepth?: number,
+) {
+  const { lines, matches } = matchingSnapshotLines(snapshot, scope);
+  if (scope.occurrence === undefined && matches.length > 1) {
+    throw new Error(
+      `snapshot scope is ambiguous (${matches.length} matches); provide occurrence`,
+    );
+  }
+  const occurrence = scope.occurrence ?? 0;
+  const start = matches[occurrence];
+  if (start === undefined) return undefined;
+
+  const root = snapshotLine(lines[start]);
+  if (!root) return undefined;
+  let end = start + 1;
+  while (end < lines.length) {
+    const line = lines[end];
+    if (line.trim().length > 0 && (line.match(/^\s*/)?.[0].length ?? 0) <= root.indent) break;
+    end++;
+  }
+  if (/^\[\.\.\. truncated at char \d+ of \d+\./.test(lines[end]?.trim() ?? "")) {
+    throw new Error(
+      "snapshot scope crosses a Camofox pagination boundary and cannot be returned safely",
+    );
+  }
+
+  const subtree = lines.slice(start, end);
+  if (maxDepth === undefined) return subtree.join("\n");
+  const indentationLevels = [
+    ...new Set(
+      subtree
+        .filter((line) => line.trim().length > 0)
+        .map((line) => line.match(/^\s*/)?.[0].length ?? 0),
+    ),
+  ].sort((a, b) => a - b);
+  return subtree
+    .filter((line) => {
+      if (line.trim().length === 0) return true;
+      const indent = line.match(/^\s*/)?.[0].length ?? 0;
+      return indentationLevels.indexOf(indent) <= maxDepth;
+    })
+    .join("\n");
+}
+
+function snapshotNodeEnd(lines: string[], start: number, indent: number) {
+  let end = start + 1;
+  while (end < lines.length) {
+    const line = lines[end];
+    if (line.trim() && (line.match(/^\s*/)?.[0].length ?? 0) <= indent) break;
+    end++;
+  }
+  return end;
+}
+
+export function compactAccessibilitySnapshot(
+  snapshot: string,
+  roles?: string[],
+  includeText = true,
+  includeUrls = true,
+) {
+  const lines = snapshot.split("\n");
+  const roleFilter = roles?.length
+    ? new Set(roles.map((role) => role.trim().toLowerCase()))
+    : undefined;
+  return lines.flatMap((line, index) => {
+    const node = snapshotLine(line);
+    if (!node || (roleFilter && !roleFilter.has(node.role))) return [];
+    const subtree = lines.slice(index, snapshotNodeEnd(lines, index, node.indent));
+    const ref = line.match(/\[(e\d+)\]/)?.[1];
+    const item: Record<string, unknown> = { role: node.role };
+    if (node.name) item.name = node.name;
+    if (ref) item.ref = ref;
+    if (includeUrls) {
+      const urls = [...new Set(subtree.flatMap((child) => {
+        const match = child.match(/^\s*-\s+\/url:\s*(.+?)\s*$/);
+        return match ? [match[1]] : [];
+      }))];
+      if (urls.length === 1) item.url = urls[0];
+      else if (urls.length > 1) item.urls = urls;
+    }
+    if (includeText) {
+      const text = [...new Set(subtree.flatMap((child) => {
+        const parsed = snapshotLine(child);
+        if (parsed?.name) return [parsed.name];
+        const match = child.match(/^\s*-\s+(?!\/url:)[\w-]+:\s*(.+?)\s*$/);
+        return match ? [match[1]] : [];
+      }))].join(" · ");
+      if (text && text !== node.name) item.text = text;
+    }
+    return [item];
+  });
+}
+
+function snapshotSourceChunk(
+  snapshot: string,
+  offset: number,
+  response: AnyParams,
+) {
+  if (!response.truncated) return snapshot;
+  if (!response.hasMore) {
+    const remaining = Math.max(0, Number(response.totalChars) - offset);
+    if (!Number.isFinite(remaining) || snapshot.length < remaining) {
+      throw new Error("Camofox returned an invalid final snapshot page");
+    }
+    return snapshot.slice(0, remaining);
+  }
+  const marker = snapshot.match(
+    /\n\[\.\.\. truncated at char (\d+) of (\d+)\.[^\n]*\]\n/,
+  );
+  if (!marker || Number(marker[1]) !== response.nextOffset) {
+    throw new Error("Camofox snapshot pagination marker did not match nextOffset");
+  }
+  return snapshot.slice(0, marker.index);
 }
 
 export async function camofoxFetch(
@@ -231,31 +430,195 @@ export default function camofoxBrowser(pi: ExtensionAPI) {
   );
   reg(
     "camofox_snapshot",
-    "Get accessibility snapshot with eN element refs and pagination metadata.",
-    Type.Object({ tabId: Type.String(), offset: Type.Optional(Type.Number()) }),
+    "Get an accessibility snapshot with eN element refs. Optionally scope it to a ref or semantic role/name subtree and limit its depth to reduce tokens.",
+    Type.Object({
+      tabId: Type.String({ description: "Camofox tab id" }),
+      offset: Type.Optional(
+        Type.Integer({
+          minimum: 0,
+          description: "Character offset for a paginated source snapshot",
+        }),
+      ),
+      scope: Type.Optional(
+        Type.Object(
+          {
+            ref: Type.Optional(
+              Type.String({
+                description: "Existing eN snapshot ref whose subtree to return",
+              }),
+            ),
+            role: Type.Optional(
+              Type.String({
+                description: "Accessibility role whose subtree to return",
+              }),
+            ),
+            name: Type.Optional(
+              Type.String({
+                description: "Accessible name to match when role is used",
+              }),
+            ),
+            exact: Type.Optional(
+              Type.Boolean({
+                description:
+                  "Match the complete accessible name instead of a case-insensitive substring",
+              }),
+            ),
+            occurrence: Type.Optional(
+              Type.Integer({
+                minimum: 0,
+                description:
+                  "Zero-based match to return when multiple elements have the same role and name",
+              }),
+            ),
+          },
+          {
+            description:
+              "Scope target; provide exactly one of ref or role",
+          },
+        ),
+      ),
+      maxDepth: Type.Optional(Type.Integer({
+        minimum: 0,
+        maximum: 20,
+        description: "Maximum accessibility-tree depth beneath the scoped root",
+      })),
+      compact: Type.Optional(Type.Boolean({
+        description: "Return structured matching items instead of snapshot YAML",
+      })),
+      roles: Type.Optional(Type.Array(Type.String(), {
+        description: "Accessibility roles to include in compact output",
+        minItems: 1,
+      })),
+      includeText: Type.Optional(Type.Boolean({
+        description: "Include descendant text in compact items (default true)",
+      })),
+      includeUrls: Type.Optional(Type.Boolean({
+        description: "Include descendant URLs in compact items (default true)",
+      })),
+    }),
     async (p, ctx, signal) => {
-      const r: any = await request(
-        `/tabs/${encodeURIComponent(p.tabId)}/snapshot?userId=${encodeURIComponent(userId(ctx))}&offset=${Number.isFinite(p.offset) ? p.offset : 0}`,
-        undefined,
-        signal,
-      );
+      const requestedScope = validateSnapshotScope(p.scope);
+      if (p.maxDepth !== undefined && !requestedScope) {
+        throw new Error("maxDepth requires a snapshot scope");
+      }
+      if (
+        (p.roles !== undefined ||
+          p.includeText !== undefined ||
+          p.includeUrls !== undefined) &&
+        !p.compact
+      ) {
+        throw new Error("roles, includeText, and includeUrls require compact=true");
+      }
+      const uid = userId(ctx);
+      const requestedOffset = Number.isInteger(p.offset) && p.offset >= 0
+        ? p.offset
+        : 0;
+      let sourceOffset = requestedOffset;
+      let r: any;
+      let sourceSnapshot = "";
+      let snapshot: string | undefined;
+      const seenOffsets = new Set<number>();
+      const sourceChunks: string[] = [];
+      let sourceTruncated = false;
+      while (true) {
+        if (seenOffsets.has(sourceOffset)) {
+          throw new Error("Camofox snapshot pagination returned a repeated offset");
+        }
+        seenOffsets.add(sourceOffset);
+        r = await request(
+          `/tabs/${encodeURIComponent(p.tabId)}/snapshot?userId=${encodeURIComponent(uid)}&offset=${sourceOffset}`,
+          undefined,
+          signal,
+        );
+        sourceSnapshot = typeof r.snapshot === "string" ? r.snapshot : "";
+        sourceTruncated ||= !!r.truncated;
+        if (!requestedScope) {
+          snapshot = sourceSnapshot;
+          break;
+        }
+        sourceChunks.push(snapshotSourceChunk(sourceSnapshot, sourceOffset, r));
+        if (!r.hasMore) {
+          sourceSnapshot = sourceChunks.join("");
+          snapshot = scopeAccessibilitySnapshot(
+            sourceSnapshot,
+            requestedScope,
+            p.maxDepth,
+          );
+          break;
+        }
+        if (!Number.isFinite(r.nextOffset) || r.nextOffset < 0) {
+          throw new Error("Camofox snapshot pagination omitted a valid nextOffset");
+        }
+        sourceOffset = r.nextOffset;
+      }
+      if (requestedScope && snapshot === undefined) {
+        throw new Error("snapshot scope was not found");
+      }
+      const refsCount = requestedScope
+        ? new Set([...snapshot!.matchAll(/\[(e\d+)\]/g)].map((match) => match[1])).size
+        : (r.refsCount ?? 0);
+      const compactItems = p.compact
+        ? compactAccessibilitySnapshot(
+            snapshot ?? "",
+            p.roles,
+            p.includeText ?? true,
+            p.includeUrls ?? true,
+          )
+        : undefined;
+      const renderedSnapshot = compactItems
+        ? JSON.stringify({ scope: requestedScope, items: compactItems }, null, 2)
+        : (snapshot || "");
+      const outputRefsCount = compactItems
+        ? new Set(compactItems.flatMap((item) =>
+            typeof item.ref === "string" ? [item.ref] : [],
+          )).size
+        : refsCount;
+      const details = requestedScope
+        ? {
+            ...r,
+            snapshot,
+            refsCount: outputRefsCount,
+            truncated: false,
+            totalChars: renderedSnapshot.length,
+            hasMore: false,
+            nextOffset: null,
+            sourceTotalChars: r.totalChars ?? sourceSnapshot.length,
+            sourceTruncated,
+            sourceHasMore: false,
+            sourceNextOffset: null,
+            sourceOffset: requestedOffset,
+            sourcePages: seenOffsets.size,
+            requestedScope,
+            maxDepth: p.maxDepth,
+            compactItems,
+          }
+        : compactItems
+          ? {
+              ...r,
+              refsCount: outputRefsCount,
+              totalChars: renderedSnapshot.length,
+              compactItems,
+            }
+          : r;
       return {
         content: [
           {
             type: "text",
             text: [
               `url: ${r.url || ""}`,
-              `refsCount: ${r.refsCount ?? 0}`,
-              `truncated: ${!!r.truncated}`,
-              `totalChars: ${r.totalChars ?? 0}`,
-              `hasMore: ${!!r.hasMore}`,
-              `nextOffset: ${r.nextOffset ?? "null"}`,
+              ...(requestedScope ? [`scope: ${JSON.stringify(requestedScope)}`] : []),
+              `refsCount: ${outputRefsCount}`,
+              `truncated: ${requestedScope ? false : !!r.truncated}`,
+              `totalChars: ${p.compact || requestedScope ? renderedSnapshot.length : (r.totalChars ?? 0)}`,
+              ...(requestedScope ? [`sourceTotalChars: ${r.totalChars ?? sourceSnapshot.length}`] : []),
+              `hasMore: ${requestedScope ? false : !!r.hasMore}`,
+              `nextOffset: ${requestedScope ? "null" : (r.nextOffset ?? "null")}`,
               "",
-              r.snapshot || "",
+              renderedSnapshot,
             ].join("\n"),
           },
         ],
-        details: r,
+        details,
       };
     },
   );
