@@ -1,3 +1,5 @@
+![pi-agent-wrapped banner](assets/pi-agent-wrapped-banner.png)
+
 # pi-agent-wrapped
 
 Declarative [Pi](https://github.com/earendil-works/pi) coding-agent wrappers packaged with
