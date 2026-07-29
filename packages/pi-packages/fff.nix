@@ -23,13 +23,13 @@ in
 
 buildNpmPackage rec {
   pname = "pi-package-fff";
-  version = "0.6.0";
+  version = "0.10.1";
 
   src = fetchFromGitHub {
     owner = "dmtrKovalenko";
     repo = "fff";
-    rev = "fde8c52a298a2fa4375edf626e0c37b0400f5a8b";
-    hash = "sha256-0U4LO+svMO5HwT1EJP9L+St5KecMUHzPj0NMSCTCE0U=";
+    rev = "d88238dada2f197fb78725fd8d170dca56d20098";
+    hash = "sha256-GGoy8ghA87vwHEc0fi97uiBrpRTAGk/QgqzKu8BBRXo=";
   };
 
   npmDepsHash = "sha256-9bDNsPKZILm4dc+2z69xu9nnE07uJUHXcOv20HBb1Ow=";

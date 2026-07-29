@@ -6,13 +6,13 @@
 
 buildNpmPackage rec {
   pname = "pi-package-codex-goal";
-  version = "0.1.38";
+  version = "0.1.39";
 
   src = fetchFromGitHub {
     owner = "fitchmultz";
     repo = "pi-codex-goal";
-    rev = "707c754f19c814c455fcda7834f00f96f104922d";
-    hash = "sha256-rvkzg3mSq/3wD1KucD+MW6kfNO6XnuSAsoj3DyoBuFY=";
+    rev = "6c37396ff61951ecede369fb6b88aae48aa2858a";
+    hash = "sha256-pi6JG7+yqjPMA8LpP9l184VGRd59OA0a4zuReeo4sCE=";
   };
 
   postPatch = ''
@@ -28,7 +28,7 @@ buildNpmPackage rec {
         $'"resolved": "https://registry.npmjs.org/@earendil-works/pi-tui/-/pi-tui-0.80.10.tgz",\n      "integrity": "sha512-c2JO29PbhKPEQ6fgHQKAl0WhwuFqzWfzspMmP+8B5tpDuP+0mvarRbKKg8gq4b+pQx/QX+6aVS4ko7deoyjQjg==",\n      "dev": true,'
   '';
 
-  npmDepsHash = "sha256-2N8RI04mEYCWkJrU/RArJAqnhs8NKkvo4NcQIjqQ5sw=";
+  npmDepsHash = "sha256-5v7JIXWhyRhJBya3mu7yXQfLXNJmPCqrOkZLKIvqtoo=";
   npmDepsFetcherVersion = 2;
 
   buildPhase = ''
