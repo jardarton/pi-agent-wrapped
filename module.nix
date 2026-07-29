@@ -34,6 +34,7 @@ let
   fffPackage = piPackages.pi-fff;
   dynamicWorkflowsPackage = piPackages.pi-dynamic-workflows;
   codexGoalPackage = piPackages.pi-codex-goal;
+  mcpAdapterPackage = piPackages.pi-mcp-adapter;
   bundledExtensionPath = name: "${piResources}/share/pi-resources/extensions/${name}.ts";
   bundledExtensionNames = [
     "better-openai"
@@ -256,6 +257,12 @@ in
             prompts = [ "${codexGoalPackage}/share/pi-packages/codex-goal/prompts" ];
           }
         ]
+        ++ lib.optionals config.pi.mcpAdapter.enable [
+          {
+            package = mcpAdapterPackage;
+            extensions = [ "${mcpAdapterPackage}/share/pi-packages/mcp-adapter/index.ts" ];
+          }
+        ]
         ++ mattPocockResourcePackage;
       description = "Nix-built Pi packages exposed as generated settings resources.";
     };
@@ -291,6 +298,12 @@ in
       type = lib.types.bool;
       default = false;
       description = "Whether to expose the packaged dynamic workflow extension.";
+    };
+
+    mcpAdapter.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether to expose the packaged MCP adapter extension.";
     };
 
     goal.enable = lib.mkOption {

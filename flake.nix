@@ -116,6 +116,7 @@
               self.packages.${system}.pi-fff
               self.packages.${system}.pi-dynamic-workflows
               self.packages.${system}.pi-codex-goal
+              self.packages.${system}.pi-mcp-adapter
             ];
           };
         }
