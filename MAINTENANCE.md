@@ -72,6 +72,24 @@ nix build .#p .#pi-dynamic-workflows
 
 The upstream lockfile currently omits integrity fields for three nested `@earendil-works/*` packages. Keep or refresh the `postPatch` integrity substitutions as needed.
 
+### MCP adapter Pi package
+
+`packages/pi-packages/mcp-adapter.nix` builds `pi-mcp-adapter` as a Nix Pi resource package instead of using Pi's runtime package loader:
+
+- repo: <https://github.com/nicobailon/pi-mcp-adapter>
+- extension used: `index.ts`
+- flake package: `.#pi-mcp-adapter`
+- wrapper option: `pi.mcpAdapter.enable` (disabled by default)
+
+Update the pinned revision and hashes using the same `nix flake prefetch` and fake-hash workflow described above. The upstream lockfile currently omits integrity fields for three nested `@earendil-works/*` packages; refresh the `postPatch` substitutions when updating.
+
+Then run:
+
+```bash
+nix fmt
+nix build .#pi-mcp-adapter .#p
+```
+
 ### Herdr Pi integration
 
 `module.nix` fetches Herdr with a pinned `pkgs.fetchFromGitHub` source for the declarative Pi integration extension:
