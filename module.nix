@@ -35,6 +35,7 @@ let
   dynamicWorkflowsPackage = piPackages.pi-dynamic-workflows;
   codexGoalPackage = piPackages.pi-codex-goal;
   mcpAdapterPackage = piPackages.pi-mcp-adapter;
+  reviewPackage = piPackages.pi-review;
   bundledExtensionPath = name: "${piResources}/share/pi-resources/extensions/${name}.ts";
   bundledExtensionNames = [
     "better-openai"
@@ -263,6 +264,12 @@ in
             extensions = [ "${mcpAdapterPackage}/share/pi-packages/mcp-adapter/index.ts" ];
           }
         ]
+        ++ lib.optionals config.pi.review.enable [
+          {
+            package = reviewPackage;
+            extensions = [ "${reviewPackage}/share/pi-packages/pi-review/review.ts" ];
+          }
+        ]
         ++ mattPocockResourcePackage;
       description = "Nix-built Pi packages exposed as generated settings resources.";
     };
@@ -310,6 +317,12 @@ in
       type = lib.types.bool;
       default = false;
       description = "Whether to expose the packaged Codex-style goal extension and prompt template.";
+    };
+
+    review.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether to expose the packaged Earendil code review extension and its Git dependencies.";
     };
 
     mattPocockSkills = {
@@ -710,7 +723,11 @@ in
     # Only the session-reader skill needs an interpreter. Consumers that want
     # Python available to the agent regardless can add it to `runtimePkgs`.
     ++ lib.optionals (builtins.elem "session-reader" config.pi.localSkills) [ pkgs.python3 ]
-    ++ lib.optionals config.pi.nixOptions.enable [ pkgs.nix ];
+    ++ lib.optionals config.pi.nixOptions.enable [ pkgs.nix ]
+    ++ lib.optionals config.pi.review.enable [
+      pkgs.git
+      pkgs.gh
+    ];
 
     # Drop the unwrapped upstream entrypoints so only the configured launcher is
     # exposed. `bin/.pi-wrapped` is the original binary displaced by the Pi

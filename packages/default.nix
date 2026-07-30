@@ -24,4 +24,5 @@ in
   pi-dynamic-workflows = callPackage ./pi-packages/dynamic-workflows.nix { };
   pi-codex-goal = callPackage ./pi-packages/codex-goal.nix { };
   pi-mcp-adapter = callPackage ./pi-packages/mcp-adapter.nix { };
+  pi-review = callPackage ./pi-packages/review.nix { };
 }
