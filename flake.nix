@@ -19,6 +19,10 @@
       nixpkgsLib = nixpkgs.lib;
       systems = nixpkgsLib.systems.flakeExposed;
       forEachSystem = nixpkgsLib.genAttrs systems;
+      # One nixpkgs instantiation per system, shared by `packages`, `devShells`
+      # and `formatter`. Importing nixpkgs separately in each of those outputs
+      # evaluated the fixpoint three times per system.
+      pkgsFor = forEachSystem (system: import nixpkgs { inherit system; });
       wrapperModule = nixpkgsLib.modules.importApply ./module.nix inputs;
       wrapper = nix-wrapper-modules.lib.evalModule wrapperModule;
       mkProfile = import ./lib/mk-profile.nix {
@@ -45,7 +49,7 @@
       packages = forEachSystem (
         system:
         let
-          pkgs = import nixpkgs { inherit system; };
+          pkgs = pkgsFor.${system};
         in
         import ./packages { inherit pkgs; }
         // rec {
@@ -97,13 +101,29 @@
         {
           extensions = pi-resources;
           launcher = p;
+
+          # `nix fmt` is only maintainer discipline on its own; this makes the
+          # tree format a check. `--no-cache` keeps treefmt from writing to a
+          # cache dir inside the sandbox.
+          formatting =
+            pkgsFor.${system}.runCommand "check-formatting"
+              {
+                nativeBuildInputs = [ self.formatter.${system} ];
+              }
+              ''
+                cp -r ${self} source
+                chmod -R u+w source
+                cd source
+                treefmt --no-cache --fail-on-change
+                touch "$out"
+              '';
         }
       );
 
       devShells = forEachSystem (
         system:
         let
-          pkgs = import nixpkgs { inherit system; };
+          pkgs = pkgsFor.${system};
         in
         {
           default = pkgs.mkShell {
@@ -123,12 +143,6 @@
         }
       );
 
-      formatter = forEachSystem (
-        system:
-        let
-          pkgs = import nixpkgs { inherit system; };
-        in
-        pkgs.nixfmt-tree
-      );
+      formatter = forEachSystem (system: pkgsFor.${system}.nixfmt-tree);
     };
 }
