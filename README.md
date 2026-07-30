@@ -170,7 +170,7 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
 - `pi.resourcePackages`, `pi.packages`
 - `pi.appendSystemPrompt`, `pi.overrideSystemPrompt`
 - `pi.splash.enable` and `pi.splash.*` (see below)
-- opt-in integrations under `pi.fff`, `pi.dynamicWorkflows`, `pi.goal`,
+- opt-in integrations under `pi.fff`, `pi.dynamicWorkflows`, `pi.goal`, `pi.review`,
   `pi.herdrIntegration`, `pi.mattPocockSkills`, `pi.camofoxBrowser`,
   `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
 
@@ -178,6 +178,17 @@ When `tree-summary-model` is listed in `pi.bundledExtensions`, its two overrides
 can be controlled independently with `pi.cheapModels.treeSummary.enable` and
 `pi.cheapModels.compaction.enable`. Both default to `true` for compatibility;
 setting one to `false` leaves that operation to Pi's built-in implementation.
+
+Enable Earendil's packaged code-review workflow with:
+
+```nix
+{
+  pi.review.enable = true;
+}
+```
+
+This exposes `/review` and `/end-review` and adds Git and GitHub CLI to the
+wrapper. The integration is disabled by default.
 
 When `pi.herdrIntegration.enable` is enabled, the wrapper also loads a narrowly
 scoped terminal-capability shim. Herdr forwards Kitty graphics sequences while

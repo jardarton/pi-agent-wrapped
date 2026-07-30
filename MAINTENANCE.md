@@ -90,6 +90,35 @@ nix fmt
 nix build .#pi-mcp-adapter .#p
 ```
 
+### Pi review package
+
+`packages/pi-packages/review.nix` builds Earendil's `pi-review` extension as a Nix Pi resource package instead of using Pi's runtime package loader:
+
+- repo: <https://github.com/earendil-works/pi-review>
+- extension used: `review.ts`
+- flake package: `.#pi-review`
+- wrapper option: `pi.review.enable` (disabled by default)
+
+Update the pinned revision and source hash with:
+
+```bash
+rev=$(git ls-remote https://github.com/earendil-works/pi-review HEAD | awk '{print $1}')
+nix flake prefetch --json "github:earendil-works/pi-review/$rev"
+```
+
+Then temporarily replace `npmDepsHash` with `lib.fakeHash` and run:
+
+```bash
+nix build .#pi-review
+```
+
+Replace the reported hash, then run:
+
+```bash
+nix fmt
+nix build .#pi-review .#p
+```
+
 ### Herdr Pi integration
 
 `module.nix` fetches Herdr with a pinned `pkgs.fetchFromGitHub` source for the declarative Pi integration extension:
