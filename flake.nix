@@ -2,7 +2,11 @@
   description = "Declarative, configurable Pi coding-agent wrappers";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    # `nixos-unstable`, not `nixpkgs-unstable`: the consumer repository builds this
+    # flake with its own `nixos-unstable` nixpkgs through `follows`. Tracking the
+    # faster branch here would check this repository against a newer tree than the
+    # one that actually builds it, so a break would only appear downstream.
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     nix-wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
     nix-wrapper-modules.inputs.nixpkgs.follows = "nixpkgs";
