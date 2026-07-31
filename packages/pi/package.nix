@@ -39,6 +39,8 @@ buildNpmPackage {
     cp ${./generated/models.generated.ts} packages/ai/src/models.generated.ts
     cp ${./generated/image-models.generated.ts} packages/ai/src/image-models.generated.ts
     cp ${./generated/providers}/*.models.ts packages/ai/src/providers/
+    mkdir -p packages/ai/src/providers/data
+    cp -R ${./generated/provider-data}/. packages/ai/src/providers/data/
   '';
 
   preBuild = ''
@@ -49,12 +51,23 @@ buildNpmPackage {
     tsconfig.compilerOptions.target = "ES2024";
     tsconfig.compilerOptions.lib = ["ES2024"];
     fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, "\t") + "\n");
-    for (const name of ["tui", "ai", "agent", "coding-agent", "orchestrator"]) {
+    for (const name of [
+      "tui",
+      "ai",
+      "agent",
+      "storage/sqlite-node",
+      "protocol",
+      "client",
+      "coding-agent",
+      "server",
+    ]) {
       const path = `packages/''${name}/package.json`;
       const pkg = JSON.parse(fs.readFileSync(path, "utf8"));
-      pkg.scripts.build = pkg.scripts.build
-        .replace("npm run generate-models && npm run generate-image-models && ", "")
-        .replaceAll("tsgo -p", "tsc -p");
+      for (const [script, command] of Object.entries(pkg.scripts ?? {})) {
+        pkg.scripts[script] = command
+          .replace("npm run generate-models && npm run generate-image-models && ", "")
+          .replaceAll("tsgo -p", "tsc -p");
+      }
       fs.writeFileSync(path, JSON.stringify(pkg, null, "\t") + "\n");
     }
     NODE
@@ -62,16 +75,18 @@ buildNpmPackage {
 
   npmDepsHash = versionData.npmDepsHash;
   makeCacheWritable = true;
-  npmBuildScript = "build";
+  npmBuildScript = "build:offline";
   npmRebuildFlags = [ "--ignore-scripts" ];
 
   installPhase = ''
     runHook preInstall
 
-    mkdir -p $out/lib/node_modules $out/lib/packages $out/bin
+    mkdir -p $out/lib/node_modules $out/lib/packages/storage $out/bin
 
     cp -R node_modules/. $out/lib/node_modules/
-    cp -R packages/{agent,ai,coding-agent,orchestrator,tui} $out/lib/packages/
+    rm -f $out/lib/node_modules/@earendil-works/pi-evals
+    cp -R packages/{agent,ai,client,coding-agent,protocol,server,tui} $out/lib/packages/
+    cp -R packages/storage/sqlite-node $out/lib/packages/storage/
 
     ${lib.optionalString (splashPatch != null) ''
       interactive_mode="$out/lib/packages/coding-agent/dist/modes/interactive/interactive-mode.js"

@@ -1,32 +1,15 @@
 diff --git a/packages/coding-agent/src/core/agent-session.ts b/packages/coding-agent/src/core/agent-session.ts
-index 775fb99..c42f99f 100644
+index 312404d9..a7bc91d4 100644
 --- a/packages/coding-agent/src/core/agent-session.ts
 +++ b/packages/coding-agent/src/core/agent-session.ts
-@@ -2853,6 +2853,7 @@ export class AgentSession {
-  					type: "session_before_tree",
- 					preparation,
- 					signal: this._branchSummaryAbortController.signal,
-+					streamFn: this.agent.streamFn,
- 				})) as SessionBeforeTreeResult | undefined;
- 
- 				if (result?.cancel) {
+@@ -2955,0 +2956 @@ export class AgentSession {
++					streamFn: this.agent.streamFunction,
 diff --git a/packages/coding-agent/src/core/extensions/types.ts b/packages/coding-agent/src/core/extensions/types.ts
-index d3c0601..a8ea857 100644
+index f8d13b19..de43197d 100644
 --- a/packages/coding-agent/src/core/extensions/types.ts
 +++ b/packages/coding-agent/src/core/extensions/types.ts
-@@ -11,5 +11,6 @@ import type {
- 	AgentToolResult,
- 	AgentToolUpdateCallback,
+@@ -14,0 +15 @@ import type {
 +	StreamFn,
- 	ThinkingLevel,
- 	ToolExecutionMode,
- } from "@earendil-works/pi-agent-core";
-@@ -626,6 +627,8 @@ export interface SessionBeforeTreeEvent {
- 	type: "session_before_tree";
- 	preparation: TreePreparation;
- 	signal: AbortSignal;
+@@ -642,0 +644,2 @@ export interface SessionBeforeTreeEvent {
 +	/** Session request stream, preserving retries, headers, hooks, and provider behavior. */
 +	streamFn: StreamFn;
- }
- 
- /** Fired after navigating in the session tree */

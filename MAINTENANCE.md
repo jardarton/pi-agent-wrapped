@@ -305,8 +305,10 @@ Copy generated files into this repo:
 
 ```sh
 rm -rf packages/pi/generated
-mkdir -p packages/pi/generated/providers
+mkdir -p packages/pi/generated/providers packages/pi/generated/provider-data
 cp ~/.cache/checkouts/github.com/earendil-works/pi/packages/ai/src/providers/*.models.ts packages/pi/generated/providers/
+cp ~/.cache/checkouts/github.com/earendil-works/pi/packages/ai/src/providers/data/*.json packages/pi/generated/provider-data/
+cp ~/.cache/checkouts/github.com/earendil-works/pi/packages/ai/src/providers/data/.manifest.json packages/pi/generated/provider-data/
 cp ~/.cache/checkouts/github.com/earendil-works/pi/packages/ai/src/models.generated.ts packages/pi/generated/
 cp ~/.cache/checkouts/github.com/earendil-works/pi/packages/ai/src/image-models.generated.ts packages/pi/generated/
 ```
