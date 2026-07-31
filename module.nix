@@ -36,6 +36,7 @@ let
   codexGoalPackage = piPackages.pi-codex-goal;
   mcpAdapterPackage = piPackages.pi-mcp-adapter;
   reviewPackage = piPackages.pi-review;
+  chromeCdpPackage = piPackages.pi-chrome-cdp;
   bundledExtensionPath = name: "${piResources}/share/pi-resources/extensions/${name}.ts";
   bundledExtensionNames = [
     "better-openai"
@@ -270,6 +271,12 @@ in
             extensions = [ "${reviewPackage}/share/pi-packages/pi-review/review.ts" ];
           }
         ]
+        ++ lib.optionals config.pi.chromeCdp.enable [
+          {
+            package = chromeCdpPackage;
+            skills = [ "${chromeCdpPackage}/share/pi-packages/chrome-cdp/skills/chrome-cdp" ];
+          }
+        ]
         ++ mattPocockResourcePackage;
       description = "Nix-built Pi packages exposed as generated settings resources.";
     };
@@ -323,6 +330,12 @@ in
       type = lib.types.bool;
       default = false;
       description = "Whether to expose the packaged Earendil code review extension and its Git dependencies.";
+    };
+
+    chromeCdp.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether to expose the packaged chrome-cdp skill for interacting with a live local browser session.";
     };
 
     mattPocockSkills = {

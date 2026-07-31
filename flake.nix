@@ -142,6 +142,7 @@
               self.packages.${system}.pi-codex-goal
               self.packages.${system}.pi-mcp-adapter
               self.packages.${system}.pi-review
+              self.packages.${system}.pi-chrome-cdp
             ];
           };
         }

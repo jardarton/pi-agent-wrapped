@@ -25,4 +25,5 @@ in
   pi-codex-goal = callPackage ./pi-packages/codex-goal.nix { };
   pi-mcp-adapter = callPackage ./pi-packages/mcp-adapter.nix { };
   pi-review = callPackage ./pi-packages/review.nix { };
+  pi-chrome-cdp = callPackage ./pi-packages/chrome-cdp.nix { };
 }
