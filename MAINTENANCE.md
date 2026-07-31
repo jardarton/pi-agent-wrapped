@@ -119,6 +119,30 @@ nix fmt
 nix build .#pi-review .#p
 ```
 
+### Chrome CDP skill package
+
+`packages/pi-packages/chrome-cdp.nix` packages Pasky's `chrome-cdp` skill as a
+Nix Pi resource package:
+
+- repo: <https://github.com/pasky/chrome-cdp-skill>
+- skill used: `skills/chrome-cdp`
+- flake package: `.#pi-chrome-cdp`
+- wrapper option: `pi.chromeCdp.enable` (disabled by default)
+
+Update the pinned version, revision, and source hash with:
+
+```bash
+rev=$(git ls-remote https://github.com/pasky/chrome-cdp-skill HEAD | awk '{print $1}')
+nix flake prefetch --json "github:pasky/chrome-cdp-skill/$rev"
+```
+
+Then run:
+
+```bash
+nix fmt
+nix build .#pi-chrome-cdp .#p
+```
+
 ### Herdr Pi integration
 
 `module.nix` fetches Herdr with a pinned `pkgs.fetchFromGitHub` source for the declarative Pi integration extension:

@@ -171,7 +171,7 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
 - `pi.appendSystemPrompt`, `pi.overrideSystemPrompt`
 - `pi.splash.enable` and `pi.splash.*` (see below)
 - opt-in integrations under `pi.fff`, `pi.dynamicWorkflows`, `pi.goal`, `pi.review`,
-  `pi.herdrIntegration`, `pi.mattPocockSkills`, `pi.camofoxBrowser`,
+  `pi.chromeCdp`, `pi.herdrIntegration`, `pi.mattPocockSkills`, `pi.camofoxBrowser`,
   `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
 
 When `tree-summary-model` is listed in `pi.bundledExtensions`, its two overrides
@@ -189,6 +189,18 @@ Enable Earendil's packaged code-review workflow with:
 
 This exposes `/review` and `/end-review` and adds Git and GitHub CLI to the
 wrapper. The integration is disabled by default.
+
+Enable the packaged [chrome-cdp](https://github.com/pasky/chrome-cdp-skill)
+skill with:
+
+```nix
+{
+  pi.chromeCdp.enable = true;
+}
+```
+
+The skill connects to a live local Chrome-family browser after remote debugging
+is enabled in the browser. Its Node.js runtime is pinned into the package.
 
 When `pi.herdrIntegration.enable` is enabled, the wrapper also loads a narrowly
 scoped terminal-capability shim. Herdr forwards Kitty graphics sequences while
