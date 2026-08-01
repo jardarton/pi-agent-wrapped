@@ -129,6 +129,12 @@ Nix Pi resource package:
 - flake package: `.#pi-chrome-cdp`
 - wrapper option: `pi.chromeCdp.enable` (disabled by default)
 
+The package exposes the upstream script as `chrome-cdp` and patches the bundled
+`SKILL.md` to use that stable command instead of cwd-dependent
+`scripts/cdp.mjs` references. The replacement intentionally fails when the
+expected upstream text disappears. On every update, review the new skill and
+adjust the patch if upstream changes its command examples or script layout.
+
 Update the pinned version, revision, and source hash with:
 
 ```bash

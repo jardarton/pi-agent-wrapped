@@ -740,7 +740,8 @@ in
     ++ lib.optionals config.pi.review.enable [
       pkgs.git
       pkgs.gh
-    ];
+    ]
+    ++ lib.optionals config.pi.chromeCdp.enable [ chromeCdpPackage ];
 
     # Drop the unwrapped upstream entrypoints so only the configured launcher is
     # exposed. `bin/.pi-wrapped` is the original binary displaced by the Pi
