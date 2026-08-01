@@ -200,7 +200,8 @@ skill with:
 ```
 
 The skill connects to a live local Chrome-family browser after remote debugging
-is enabled in the browser. Its Node.js runtime is pinned into the package.
+is enabled in the browser. Its Node.js runtime is pinned into the package, and
+the wrapper exposes the skill's CLI as `chrome-cdp` on the agent's `PATH`.
 
 When `pi.herdrIntegration.enable` is enabled, the wrapper also loads a narrowly
 scoped terminal-capability shim. Herdr forwards Kitty graphics sequences while
