@@ -29,7 +29,8 @@ consumer's configuration. All defaults and default flake aliases are neutral.
 | `packages.<system>.p` | Neutral wrapped Pi launcher |
 | `packages.<system>.pi-wrapped` | Full neutral wrapper package |
 | `packages.<system>.pi` | Unwrapped source-built Pi package |
-| `checks.<system>` | `extensions` (typecheck plus extension tests) and `launcher` (neutral wrapper build) |
+| `packages.<system>.pi-clarify` | Nix-packaged pi-clarify extension |
+| `checks.<system>` | Extension tests, packaged integration checks, and the neutral wrapper build |
 
 `homeManagerModules` is an alias of `homeModules` for consumers that prefer the
 conventional output name.
@@ -171,7 +172,7 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
 - `pi.appendSystemPrompt`, `pi.overrideSystemPrompt`
 - `pi.splash.enable` and `pi.splash.*` (see below)
 - opt-in integrations under `pi.fff`, `pi.dynamicWorkflows`, `pi.goal`, `pi.review`,
-  `pi.chromeCdp`, `pi.herdrIntegration`, `pi.mattPocockSkills`, `pi.camofoxBrowser`,
+  `pi.clarify`, `pi.chromeCdp`, `pi.herdrIntegration`, `pi.mattPocockSkills`, `pi.camofoxBrowser`,
   `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
 
 When `tree-summary-model` is listed in `pi.bundledExtensions`, its two overrides
@@ -189,6 +190,18 @@ Enable Earendil's packaged code-review workflow with:
 
 This exposes `/review` and `/end-review` and adds Git and GitHub CLI to the
 wrapper. The integration is disabled by default.
+
+Enable the packaged [pi-clarify](https://github.com/dodo-reach/pi-clarify)
+extension with:
+
+```nix
+{
+  pi.clarify.enable = true;
+}
+```
+
+This exposes `/clarify` and the `-clarify` input marker. The integration is
+disabled by default.
 
 Enable the packaged [chrome-cdp](https://github.com/pasky/chrome-cdp-skill)
 skill with:

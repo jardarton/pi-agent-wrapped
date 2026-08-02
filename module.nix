@@ -36,6 +36,7 @@ let
   codexGoalPackage = piPackages.pi-codex-goal;
   mcpAdapterPackage = piPackages.pi-mcp-adapter;
   reviewPackage = piPackages.pi-review;
+  clarifyPackage = piPackages.pi-clarify;
   chromeCdpPackage = piPackages.pi-chrome-cdp;
   bundledExtensionPath = name: "${piResources}/share/pi-resources/extensions/${name}.ts";
   bundledExtensionNames = [
@@ -271,6 +272,12 @@ in
             extensions = [ "${reviewPackage}/share/pi-packages/pi-review/review.ts" ];
           }
         ]
+        ++ lib.optionals config.pi.clarify.enable [
+          {
+            package = clarifyPackage;
+            extensions = [ "${clarifyPackage}/share/pi-packages/clarify/extensions/clarify.ts" ];
+          }
+        ]
         ++ lib.optionals config.pi.chromeCdp.enable [
           {
             package = chromeCdpPackage;
@@ -330,6 +337,12 @@ in
       type = lib.types.bool;
       default = false;
       description = "Whether to expose the packaged Earendil code review extension and its Git dependencies.";
+    };
+
+    clarify.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether to expose the packaged prompt clarification extension.";
     };
 
     chromeCdp.enable = lib.mkOption {
