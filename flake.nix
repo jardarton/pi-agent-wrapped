@@ -95,14 +95,15 @@
 
       homeManagerModules = self.homeModules;
 
-      # `pi-resources` runs `npm run check` (typecheck plus the extension test
-      # suite) during its build, and `p` exercises the full wrapper pipeline.
+      # Resource packages run their own tests during these builds, while `p`
+      # exercises the full neutral wrapper pipeline.
       checks = forEachSystem (
         system:
         let
-          inherit (self.packages.${system}) pi-resources p;
+          inherit (self.packages.${system}) pi-clarify pi-resources p;
         in
         {
+          clarify = pi-clarify;
           extensions = pi-resources;
           launcher = p;
 
@@ -142,6 +143,7 @@
               self.packages.${system}.pi-codex-goal
               self.packages.${system}.pi-mcp-adapter
               self.packages.${system}.pi-review
+              self.packages.${system}.pi-clarify
               self.packages.${system}.pi-chrome-cdp
             ];
           };

@@ -119,6 +119,30 @@ nix fmt
 nix build .#pi-review .#p
 ```
 
+### Pi clarify package
+
+`packages/pi-packages/clarify.nix` packages the `pi-clarify` prompt rewriting
+extension as a Nix Pi resource package:
+
+- repo: <https://github.com/dodo-reach/pi-clarify>
+- extension used: `extensions/clarify.ts`
+- flake package: `.#pi-clarify`
+- wrapper option: `pi.clarify.enable` (disabled by default)
+
+Update the pinned version, revision, and source hash with:
+
+```bash
+rev=$(git ls-remote https://github.com/dodo-reach/pi-clarify HEAD | awk '{print $1}')
+nix flake prefetch --json "github:dodo-reach/pi-clarify/$rev"
+```
+
+Then run:
+
+```bash
+nix fmt
+nix build .#pi-clarify .#p
+```
+
 ### Chrome CDP skill package
 
 `packages/pi-packages/chrome-cdp.nix` packages Pasky's `chrome-cdp` skill as a
