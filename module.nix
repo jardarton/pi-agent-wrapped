@@ -44,6 +44,7 @@ let
     "clanker-working-messages"
     "context"
     "explore"
+    "gpt-subagent"
     "herdr-terminal-images"
     "host-statusline"
     "librarian"
