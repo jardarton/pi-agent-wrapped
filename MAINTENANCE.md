@@ -220,7 +220,7 @@ The default profile discovers and exposes all `skills/engineering/*` and `skills
 
 - `disable-model-invocation: true`
 
-That keeps them available as manual skill commands without including them in the model-visible skill inventory. `skills/deprecated/*` and `skills/personal/*` are intentionally ignored by default.
+That keeps them available as manual skill commands without including them in the model-visible skill inventory. `skills/deprecated/*` and `skills/productivity/*` are intentionally ignored by default.
 
 Update steps:
 
