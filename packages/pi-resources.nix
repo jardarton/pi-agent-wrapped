@@ -9,7 +9,7 @@ buildNpmPackage {
   version = "0.1.0";
 
   src = ../extensions;
-  npmDepsHash = "sha256-8FPO8teDbfq69Y4WDrto9PZH70g5KWTiaFsbS6SD/vQ=";
+  npmDepsHash = "sha256-va3iMavra+OksZyj9EJKNdQiVPlWF2F6DMywIjINYOA=";
   npmDepsFetcherVersion = 2;
 
   buildPhase = ''
