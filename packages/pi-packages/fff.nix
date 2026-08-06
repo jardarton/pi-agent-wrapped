@@ -23,13 +23,13 @@ in
 
 buildNpmPackage rec {
   pname = "pi-package-fff";
-  version = "0.10.1";
+  version = "0.6.0";
 
   src = fetchFromGitHub {
     owner = "dmtrKovalenko";
     repo = "fff";
-    rev = "d88238dada2f197fb78725fd8d170dca56d20098";
-    hash = "sha256-GGoy8ghA87vwHEc0fi97uiBrpRTAGk/QgqzKu8BBRXo=";
+    rev = "3a0ce85c54875563bc55888b6b9829b44aeca911";
+    hash = "sha256-OsuHYxz1dvyfMXiqKGBGsSt5+wFCaCgGxO7T4S0YjHc=";
   };
 
   npmDepsHash = "sha256-9bDNsPKZILm4dc+2z69xu9nnE07uJUHXcOv20HBb1Ow=";
@@ -37,7 +37,7 @@ buildNpmPackage rec {
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit src;
-    hash = "sha256-sOE3Zrs/ZtOIusH0+OvR1Ew5sfQfse6eWSLPwDPVSU4=";
+    hash = "sha256-2EmPI6x55hGeNSrA/cvb+e4Tku81C6+tgc7pAjv0zYM=";
   };
 
   postPatch = ''

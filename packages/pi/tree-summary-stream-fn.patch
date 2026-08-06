@@ -1,15 +1,13 @@
 diff --git a/packages/coding-agent/src/core/agent-session.ts b/packages/coding-agent/src/core/agent-session.ts
-index 312404d9..a7bc91d4 100644
 --- a/packages/coding-agent/src/core/agent-session.ts
 +++ b/packages/coding-agent/src/core/agent-session.ts
-@@ -2955,0 +2956 @@ export class AgentSession {
+@@ -2964,0 +2965 @@ export class AgentSession {
 +					streamFn: this.agent.streamFunction,
 diff --git a/packages/coding-agent/src/core/extensions/types.ts b/packages/coding-agent/src/core/extensions/types.ts
-index f8d13b19..de43197d 100644
 --- a/packages/coding-agent/src/core/extensions/types.ts
 +++ b/packages/coding-agent/src/core/extensions/types.ts
 @@ -14,0 +15 @@ import type {
 +	StreamFn,
-@@ -642,0 +644,2 @@ export interface SessionBeforeTreeEvent {
+@@ -641,0 +643,2 @@ export interface SessionBeforeTreeEvent {
 +	/** Session request stream, preserving retries, headers, hooks, and provider behavior. */
 +	streamFn: StreamFn;

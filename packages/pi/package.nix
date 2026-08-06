@@ -55,7 +55,7 @@ buildNpmPackage {
       "tui",
       "ai",
       "agent",
-      "storage/sqlite-node",
+      "session-backends/sqlite-node",
       "protocol",
       "client",
       "coding-agent",
@@ -81,12 +81,12 @@ buildNpmPackage {
   installPhase = ''
     runHook preInstall
 
-    mkdir -p $out/lib/node_modules $out/lib/packages/storage $out/bin
+    mkdir -p $out/lib/node_modules $out/lib/packages/session-backends $out/bin
 
     cp -R node_modules/. $out/lib/node_modules/
     rm -f $out/lib/node_modules/@earendil-works/pi-evals
-    cp -R packages/{agent,ai,client,coding-agent,protocol,server,tui} $out/lib/packages/
-    cp -R packages/storage/sqlite-node $out/lib/packages/storage/
+    cp -R packages/{agent,ai,client,coding-agent,protocol,server,telemetry,tui} $out/lib/packages/
+    cp -R packages/session-backends/sqlite-node $out/lib/packages/session-backends/
 
     ${lib.optionalString (splashPatch != null) ''
       interactive_mode="$out/lib/packages/coding-agent/dist/modes/interactive/interactive-mode.js"
