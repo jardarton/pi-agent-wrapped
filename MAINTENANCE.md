@@ -173,6 +173,88 @@ nix fmt
 nix build .#pi-chrome-cdp .#p
 ```
 
+### Codex conversion Pi package
+
+`packages/pi-packages/codex-conversion.nix` packages `@howaboua/pi-codex-conversion`
+as a Nix Pi resource package:
+
+- repo: <https://github.com/IgorWarzocha/howaboua-pi-stuff/tree/main/packages/pi-codex-conversion>
+- extension used: `dist/index.js`
+- flake package: `.#pi-codex-conversion`
+- wrapper option: `pi.codexConversion.enable` (disabled by default)
+
+This package differs from the others in three ways:
+
+- The source is the published npm tarball, not the Git repository. Upstream is a
+  Bun workspace monorepo with no npm lockfile, and its build needs the
+  TypeScript native preview compiler. The tarball already carries the compiled
+  `dist/` and the prebuilt native helpers.
+- `packages/pi-packages/codex-conversion/package.json` and
+  `package-lock.json` are vendored, and hold the runtime dependencies only. They
+  replace the tarball's own manifest so `npm ci` skips the dev toolchain and the
+  peer dependencies that Pi provides.
+- Code Mode needs a host binary that upstream downloads from the Codex release
+  page on first use. `codex-conversion.nix` prefetches that release asset
+  instead, so nothing is installed at runtime.
+
+`codex-conversion/verify-upstream.mjs` runs during the build and fails when the
+vendored dependency list or the pinned code-mode release drifts from the
+tarball, so both hand-maintained pins are checked on every update.
+
+Update steps. First read the new version and its tarball digest:
+
+```bash
+curl -s https://registry.npmjs.org/@howaboua/pi-codex-conversion \
+  | jq -r '.["dist-tags"].latest as $v | "\($v) \(.versions[$v].dist.integrity)"'
+```
+
+Put `version` and `hash` into `codex-conversion.nix`, then regenerate the
+vendored manifest and lockfile from the new tarball:
+
+```bash
+version=<new-version>
+vendored=$PWD/packages/pi-packages/codex-conversion
+tmp=$(mktemp -d)
+curl -sL "https://registry.npmjs.org/@howaboua/pi-codex-conversion/-/pi-codex-conversion-$version.tgz" \
+  | tar xz -C "$tmp"
+jq '{name,version,type,pi,dependencies,engines,license}' "$tmp/package/package.json" \
+  > "$tmp/package.json"
+(cd "$tmp" && npm install --package-lock-only --omit=dev --no-audit --no-fund)
+cp "$tmp/package.json" "$tmp/package-lock.json" "$vendored/"
+```
+
+Replace `npmDepsHash` with `lib.fakeHash`, run `nix build .#pi-codex-conversion`,
+and put the reported hash back.
+
+When the build reports that the code-mode host release moved, read the new
+values out of the tarball and update `hostRelease` and `hostAssets`:
+
+```bash
+node --input-type=module -e "
+  const m = await import('$tmp/package/dist/tools/code-mode/host-assets.js');
+  console.log(m.HOST_RELEASE, JSON.stringify(m.HOST_ASSETS, null, 2));
+"
+```
+
+The `sha256` values in `hostAssets` are upstream's hex digests, copied verbatim.
+
+Then run:
+
+```bash
+nix fmt
+nix build .#pi-codex-conversion .#p
+```
+
+Sanity checks:
+
+```bash
+find result/share/pi-packages/codex-conversion -type f -path '*/bin/*'
+result/share/pi-packages/codex-conversion/code-mode/bin/*/codex-code-mode-host --help
+```
+
+Only the build platform's helpers should be present, and every one of them
+should run: they are prebuilt glibc binaries patched by `autoPatchelfHook`.
+
 ### Herdr Pi integration
 
 `module.nix` fetches Herdr with a pinned `pkgs.fetchFromGitHub` source for the declarative Pi integration extension:

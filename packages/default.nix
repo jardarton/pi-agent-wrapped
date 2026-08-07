@@ -27,4 +27,5 @@ in
   pi-review = callPackage ./pi-packages/review.nix { };
   pi-clarify = callPackage ./pi-packages/clarify.nix { };
   pi-chrome-cdp = callPackage ./pi-packages/chrome-cdp.nix { };
+  pi-codex-conversion = callPackage ./pi-packages/codex-conversion.nix { };
 }
