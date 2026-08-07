@@ -38,6 +38,7 @@ let
   reviewPackage = piPackages.pi-review;
   clarifyPackage = piPackages.pi-clarify;
   chromeCdpPackage = piPackages.pi-chrome-cdp;
+  codexConversionPackage = piPackages.pi-codex-conversion;
   bundledExtensionPath = name: "${piResources}/share/pi-resources/extensions/${name}.ts";
   bundledExtensionNames = [
     "better-openai"
@@ -285,6 +286,14 @@ in
             skills = [ "${chromeCdpPackage}/share/pi-packages/chrome-cdp/skills/chrome-cdp" ];
           }
         ]
+        ++ lib.optionals config.pi.codexConversion.enable [
+          {
+            package = codexConversionPackage;
+            extensions = [
+              "${codexConversionPackage}/share/pi-packages/codex-conversion/dist/index.js"
+            ];
+          }
+        ]
         ++ mattPocockResourcePackage;
       description = "Nix-built Pi packages exposed as generated settings resources.";
     };
@@ -350,6 +359,12 @@ in
       type = lib.types.bool;
       default = false;
       description = "Whether to expose the packaged chrome-cdp skill for interacting with a live local browser session.";
+    };
+
+    codexConversion.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether to expose the packaged pi-codex-conversion extension, which gives GPT models Codex-shaped tools and prompt handling.";
     };
 
     mattPocockSkills = {

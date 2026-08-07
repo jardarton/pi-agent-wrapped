@@ -1,0 +1,26 @@
+{
+  "name": "@howaboua/pi-codex-conversion",
+  "version": "3.0.9",
+  "type": "module",
+  "pi": {
+    "extensions": [
+      "./dist/index.js"
+    ]
+  },
+  "dependencies": {
+    "js-tiktoken": "^1.0.21",
+    "openai": "6.26.0",
+    "partial-json": "^0.1.7",
+    "proxy-from-env": "1.1.0",
+    "selfsigned": "^3.0.1",
+    "smol-toml": "^1.6.0",
+    "tree-sitter-bash": "^0.25.1",
+    "undici": "8.5.0",
+    "web-tree-sitter": "^0.26.7",
+    "ws": "^8.21.0"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "license": "MIT"
+}

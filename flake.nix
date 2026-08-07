@@ -145,6 +145,7 @@
               self.packages.${system}.pi-review
               self.packages.${system}.pi-clarify
               self.packages.${system}.pi-chrome-cdp
+              self.packages.${system}.pi-codex-conversion
             ];
           };
         }

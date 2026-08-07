@@ -30,6 +30,7 @@ consumer's configuration. All defaults and default flake aliases are neutral.
 | `packages.<system>.pi-wrapped` | Full neutral wrapper package |
 | `packages.<system>.pi` | Unwrapped source-built Pi package |
 | `packages.<system>.pi-clarify` | Nix-packaged pi-clarify extension |
+| `packages.<system>.pi-codex-conversion` | Nix-packaged pi-codex-conversion extension |
 | `checks.<system>` | Extension tests, packaged integration checks, and the neutral wrapper build |
 
 `homeManagerModules` is an alias of `homeModules` for consumers that prefer the
@@ -172,7 +173,8 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
 - `pi.appendSystemPrompt`, `pi.overrideSystemPrompt`
 - `pi.splash.enable` and `pi.splash.*` (see below)
 - opt-in integrations under `pi.fff`, `pi.dynamicWorkflows`, `pi.goal`, `pi.review`,
-  `pi.clarify`, `pi.chromeCdp`, `pi.herdrIntegration`, `pi.mattPocockSkills`, `pi.camofoxBrowser`,
+  `pi.clarify`, `pi.chromeCdp`, `pi.codexConversion`, `pi.herdrIntegration`,
+  `pi.mattPocockSkills`, `pi.camofoxBrowser`,
   `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
 
 When `tree-summary-model` is listed in `pi.bundledExtensions`, its two overrides
@@ -215,6 +217,21 @@ skill with:
 The skill connects to a live local Chrome-family browser after remote debugging
 is enabled in the browser. Its Node.js runtime is pinned into the package, and
 the wrapper exposes the skill's CLI as `chrome-cdp` on the agent's `PATH`.
+
+Enable the packaged
+[pi-codex-conversion](https://github.com/IgorWarzocha/howaboua-pi-stuff/tree/main/packages/pi-codex-conversion)
+extension with:
+
+```nix
+{
+  pi.codexConversion.enable = true;
+}
+```
+
+This gives GPT models Codex-shaped tools and prompt handling, and exposes the
+`/codex` settings UI. The package carries the native helpers for the build
+platform and the Code Mode host binary, so nothing is downloaded at runtime.
+The integration is disabled by default.
 
 When `pi.herdrIntegration.enable` is enabled, the wrapper also loads a narrowly
 scoped terminal-capability shim. Herdr forwards Kitty graphics sequences while
