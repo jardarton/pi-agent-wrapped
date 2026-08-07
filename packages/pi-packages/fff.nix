@@ -28,8 +28,8 @@ buildNpmPackage rec {
   src = fetchFromGitHub {
     owner = "dmtrKovalenko";
     repo = "fff";
-    rev = "3a0ce85c54875563bc55888b6b9829b44aeca911";
-    hash = "sha256-OsuHYxz1dvyfMXiqKGBGsSt5+wFCaCgGxO7T4S0YjHc=";
+    rev = "b6f351d7295d3f89d4f9ecaa94d72089964edc0f";
+    hash = "sha256-axuqlXjTp08CjhZ8WB27d+89jih6JXJuES1vvXLHNBA=";
   };
 
   npmDepsHash = "sha256-9bDNsPKZILm4dc+2z69xu9nnE07uJUHXcOv20HBb1Ow=";
@@ -37,7 +37,7 @@ buildNpmPackage rec {
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit src;
-    hash = "sha256-2EmPI6x55hGeNSrA/cvb+e4Tku81C6+tgc7pAjv0zYM=";
+    hash = "sha256-iRQa3K5/E520hbq6yO+RRG8pjJBTamj/nm13XCHNOZs=";
   };
 
   postPatch = ''
