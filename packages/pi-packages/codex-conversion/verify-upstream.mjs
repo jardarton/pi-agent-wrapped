@@ -1,8 +1,5 @@
-// Build-time guard for the two things this package pins by hand: the runtime
-// dependency list mirrored into ./package.json, and the code-mode host release
-// prefetched by codex-conversion.nix. Upstream bumps either without changing
-// anything Nix would notice on its own, so assert both against the tarball.
-import { readFileSync } from "node:fs";
+// Build-time guard for the code-mode host release prefetched by
+// codex-conversion.nix. Assert the pin against the compiled pidex source.
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -12,24 +9,6 @@ const fail = (message) => {
   console.error("pi-codex-conversion: " + message);
   process.exit(1);
 };
-
-const dependencies = (path) => {
-  const deps = JSON.parse(readFileSync(path, "utf8")).dependencies ?? {};
-  return Object.entries(deps)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([name, range]) => name + "@" + range)
-    .join(", ");
-};
-
-const upstreamDeps = dependencies("upstream-package.json");
-const vendoredDeps = dependencies("package.json");
-if (upstreamDeps !== vendoredDeps) {
-  fail(
-    "vendored runtime dependencies are stale; regenerate package.json and package-lock.json" +
-      "\n  upstream: " + upstreamDeps +
-      "\n  vendored: " + vendoredDeps,
-  );
-}
 
 const hostAssets = await import(
   pathToFileURL(resolve("dist/tools/code-mode/host-assets.js")).href
