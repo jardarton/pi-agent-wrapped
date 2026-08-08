@@ -219,7 +219,7 @@ is enabled in the browser. Its Node.js runtime is pinned into the package, and
 the wrapper exposes the skill's CLI as `chrome-cdp` on the agent's `PATH`.
 
 Enable the packaged
-[pi-codex-conversion](https://github.com/IgorWarzocha/howaboua-pi-stuff/tree/main/packages/pi-codex-conversion)
+[pidex](https://github.com/jardarton/pidex)
 extension with:
 
 ```nix

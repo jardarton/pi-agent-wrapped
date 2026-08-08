@@ -175,63 +175,56 @@ nix build .#pi-chrome-cdp .#p
 
 ### Codex conversion Pi package
 
-`packages/pi-packages/codex-conversion.nix` packages `@howaboua/pi-codex-conversion`
-as a Nix Pi resource package:
+`packages/pi-packages/codex-conversion.nix` builds the pidex fork of
+`@howaboua/pi-codex-conversion` as a Nix Pi resource package:
 
-- repo: <https://github.com/IgorWarzocha/howaboua-pi-stuff/tree/main/packages/pi-codex-conversion>
+- repo: <https://github.com/jardarton/pidex>
 - extension used: `dist/index.js`
 - flake package: `.#pi-codex-conversion`
 - wrapper option: `pi.codexConversion.enable` (disabled by default)
 
 This package differs from the others in three ways:
 
-- The source is the published npm tarball, not the Git repository. Upstream is a
-  Bun workspace monorepo with no npm lockfile, and its build needs the
-  TypeScript native preview compiler. The tarball already carries the compiled
-  `dist/` and the prebuilt native helpers.
-- `packages/pi-packages/codex-conversion/package.json` and
-  `package-lock.json` are vendored, and hold the runtime dependencies only. They
-  replace the tarball's own manifest so `npm ci` skips the dev toolchain and the
-  peer dependencies that Pi provides.
+- Nix fetches a pinned pidex Git revision and compiles `dist/` from source. The
+  repository uses a Bun workspace, so `codex-conversion/package-lock.json` is a
+  Nix-only npm lock generated from the extension manifest. Build dependencies
+  are pruned before the runtime package is installed.
 - Code Mode needs a host binary that upstream downloads from the Codex release
   page on first use. `codex-conversion.nix` prefetches that release asset
   instead, so nothing is installed at runtime.
 
-`codex-conversion/verify-upstream.mjs` runs during the build and fails when the
-vendored dependency list or the pinned code-mode release drifts from the
-tarball, so both hand-maintained pins are checked on every update.
+`codex-conversion/verify-upstream.mjs` runs after compilation and fails when the
+pinned code-mode release drifts from pidex.
 
-Update steps. First read the new version and its tarball digest:
+Update steps. First choose the pidex revision and read its package version:
 
 ```bash
-curl -s https://registry.npmjs.org/@howaboua/pi-codex-conversion \
-  | jq -r '.["dist-tags"].latest as $v | "\($v) \(.versions[$v].dist.integrity)"'
+rev=$(git -C ../pidex rev-parse HEAD)
+jq -r .version ../pidex/packages/pi-codex-conversion/package.json
 ```
 
-Put `version` and `hash` into `codex-conversion.nix`, then regenerate the
-vendored manifest and lockfile from the new tarball:
+Put `version` and `rev` into `codex-conversion.nix`, replace its source hash with
+`lib.fakeHash`, and build once to obtain the new source hash. Regenerate the
+Nix-only lockfile when the pidex package manifest changes:
 
 ```bash
-version=<new-version>
 vendored=$PWD/packages/pi-packages/codex-conversion
 tmp=$(mktemp -d)
-curl -sL "https://registry.npmjs.org/@howaboua/pi-codex-conversion/-/pi-codex-conversion-$version.tgz" \
-  | tar xz -C "$tmp"
-jq '{name,version,type,pi,dependencies,engines,license}' "$tmp/package/package.json" \
-  > "$tmp/package.json"
-(cd "$tmp" && npm install --package-lock-only --omit=dev --no-audit --no-fund)
-cp "$tmp/package.json" "$tmp/package-lock.json" "$vendored/"
+cp ../pidex/packages/pi-codex-conversion/package.json "$tmp/"
+(cd "$tmp" && npm install --package-lock-only --ignore-scripts --legacy-peer-deps)
+cp "$tmp/package-lock.json" "$vendored/"
 ```
 
 Replace `npmDepsHash` with `lib.fakeHash`, run `nix build .#pi-codex-conversion`,
-and put the reported hash back.
+and put the reported hash back. Every registry entry in the lock must have an
+`integrity` field; `prefetch-npm-deps` rejects incomplete npm lock entries.
 
 When the build reports that the code-mode host release moved, read the new
-values out of the tarball and update `hostRelease` and `hostAssets`:
+values out of the built source and update `hostRelease` and `hostAssets`:
 
 ```bash
 node --input-type=module -e "
-  const m = await import('$tmp/package/dist/tools/code-mode/host-assets.js');
+  const m = await import('./packages/pi-codex-conversion/dist/tools/code-mode/host-assets.js');
   console.log(m.HOST_RELEASE, JSON.stringify(m.HOST_ASSETS, null, 2));
 "
 ```

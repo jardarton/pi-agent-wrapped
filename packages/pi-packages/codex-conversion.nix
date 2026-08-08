@@ -2,6 +2,7 @@
   lib,
   stdenv,
   buildNpmPackage,
+  fetchFromGitHub,
   fetchurl,
   autoPatchelfHook,
   alsa-lib,
@@ -9,18 +10,17 @@
 }:
 
 let
-  version = "3.0.9";
+  version = "3.0.10";
+  rev = "94e808140ecc2d5c3d0219c2fb4516ce68b05a19";
 
-  # Upstream is a Bun workspace monorepo with no npm lockfile, and its build
-  # needs the TypeScript native preview compiler. The published npm tarball
-  # already carries the compiled `dist/` and prebuilt native helpers for every
-  # platform, so it is the buildable source here. `codex-conversion/package.json`
-  # and `codex-conversion/package-lock.json` cover only the runtime
-  # dependencies; `postPatch` substitutes them so `npm ci` neither pulls the dev
-  # toolchain nor installs the peer dependencies that Pi itself provides.
-  src = fetchurl {
-    url = "https://registry.npmjs.org/@howaboua/pi-codex-conversion/-/pi-codex-conversion-${version}.tgz";
-    hash = "sha512-8B+HTA7dRKCcKhsQS6i8elr6dnzDFooiwJceXEI2DkRCXoOxopPvj+I2QJSzjD1A5U7bGFSyKNJJSwtiWDuShQ==";
+  # Build the pidex fork from source. The repository uses Bun, while
+  # buildNpmPackage needs an npm lock, so the adjacent lockfile is generated
+  # from the package manifest solely for the reproducible Nix build.
+  src = fetchFromGitHub {
+    owner = "jardarton";
+    repo = "pidex";
+    inherit rev;
+    hash = "sha256-V1jv+Qjlk0LCYhTelWfGa4L8XFgtZ34LlzJ7tbBFJbw=";
   };
 
   # Node's `${process.platform}-${process.arch}`, which the extension uses to
@@ -70,10 +70,14 @@ buildNpmPackage {
   pname = "pi-codex-conversion";
   inherit version src;
 
-  sourceRoot = "package";
+  sourceRoot = "source";
 
-  npmDepsHash = "sha256-cvRhcE1/ZjByjWiug8Dz0TEKntMp+ZBJ8dIH75PEhQk=";
+  npmDepsHash = "sha256-VauPioA3Pt03VOhSDdmnaSJbXDZ0+zMMLb51eCQyWjk=";
   npmDepsFetcherVersion = 2;
+  npmFlags = [
+    "--ignore-scripts"
+    "--legacy-peer-deps"
+  ];
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
 
@@ -85,10 +89,9 @@ buildNpmPackage {
     stdenv.cc.cc.lib
   ];
 
-  postPatch = ''
-    cp package.json upstream-package.json
-    cp ${./codex-conversion/package.json} package.json
-    cp ${./codex-conversion/package-lock.json} package-lock.json
+  postUnpack = ''
+    cp "$sourceRoot/packages/pi-codex-conversion/package.json" "$sourceRoot/package.json"
+    cp ${./codex-conversion/package-lock.json} "$sourceRoot/package-lock.json"
   '';
 
   # The only install script in the dependency tree builds tree-sitter-bash's
@@ -98,6 +101,9 @@ buildNpmPackage {
 
   buildPhase = ''
     runHook preBuild
+
+    cd packages/pi-codex-conversion
+    npm run build
 
     node ${./codex-conversion/verify-upstream.mjs} \
       ${targetDir} ${hostRelease} ${hostAsset.name} ${hostAsset.sha256}
@@ -118,10 +124,13 @@ buildNpmPackage {
   installPhase = ''
     runHook preInstall
 
+    npm prune --offline --omit=dev --ignore-scripts --legacy-peer-deps \
+      --package-lock=false --prefix ../..
+
     package_dir="$out/share/pi-packages/codex-conversion"
     mkdir -p "$package_dir"
     cp package.json README.md CHANGELOG.md LICENSE UPSTREAM_SYNC.md "$package_dir/"
-    cp -R dist src node_modules "$package_dir/"
+    cp -R dist src ../../node_modules "$package_dir/"
 
     host_dir="$package_dir/code-mode/bin/${targetDir}"
     mkdir -p "$host_dir"
@@ -134,7 +143,7 @@ buildNpmPackage {
 
   meta = {
     description = "Codex-shaped tools, prompts and OpenAI controls for the Pi coding agent";
-    homepage = "https://github.com/IgorWarzocha/howaboua-pi-stuff/tree/main/packages/pi-codex-conversion";
+    homepage = "https://github.com/jardarton/pidex";
     license = lib.licenses.mit;
     platforms = [
       "aarch64-darwin"
