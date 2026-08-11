@@ -10,8 +10,8 @@
 }:
 
 let
-  version = "3.0.10";
-  rev = "94e808140ecc2d5c3d0219c2fb4516ce68b05a19";
+  version = "3.0.12";
+  rev = "9091915b8b77a9539b274f0a6e3babf4a89cf3ba";
 
   # Build the pidex fork from source. The repository uses Bun, while
   # buildNpmPackage needs an npm lock, so the adjacent lockfile is generated
@@ -20,7 +20,7 @@ let
     owner = "jardarton";
     repo = "pidex";
     inherit rev;
-    hash = "sha256-V1jv+Qjlk0LCYhTelWfGa4L8XFgtZ34LlzJ7tbBFJbw=";
+    hash = "sha256-G2xnYlHFrmoFi+3hmCRyuhgDTpz1K4z2KWVhPKZ9N5Y=";
   };
 
   # Node's `${process.platform}-${process.arch}`, which the extension uses to
@@ -72,7 +72,7 @@ buildNpmPackage {
 
   sourceRoot = "source";
 
-  npmDepsHash = "sha256-VauPioA3Pt03VOhSDdmnaSJbXDZ0+zMMLb51eCQyWjk=";
+  npmDepsHash = "sha256-2jekxdyVcIEbeCYsIRixf9UV7RgZjm4UVCmm4XvXTJQ=";
   npmDepsFetcherVersion = 2;
   npmFlags = [
     "--ignore-scripts"
@@ -89,9 +89,9 @@ buildNpmPackage {
     stdenv.cc.cc.lib
   ];
 
-  postUnpack = ''
-    cp "$sourceRoot/packages/pi-codex-conversion/package.json" "$sourceRoot/package.json"
-    cp ${./codex-conversion/package-lock.json} "$sourceRoot/package-lock.json"
+  postPatch = ''
+    cp packages/pi-codex-conversion/package.json package.json
+    cp ${./codex-conversion/package-lock.json} package-lock.json
   '';
 
   # The only install script in the dependency tree builds tree-sitter-bash's
