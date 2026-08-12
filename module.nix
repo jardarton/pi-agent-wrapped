@@ -151,6 +151,7 @@ let
       };
   generatedExtensions =
     bundledExtensionPaths
+    ++ lib.optionals config.pi.decompMatcher.enable [ (bundledExtensionPath "decomp-matcher") ]
     ++ lib.optionals config.pi.gondolin.enable [ gondolinExtensionPath ]
     ++ lib.optionals config.pi.camofoxBrowser.enable [
       "${piResources}/share/pi-resources/extensions/camofox-browser.ts"
@@ -317,6 +318,68 @@ in
       default = [ ];
       example = bundledExtensionNames;
       description = "Bundled extension names to expose to Pi.";
+    };
+
+    decompMatcher = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Whether to enable the bounded decompilation matcher child-job extension.";
+      };
+
+      jobRoot = lib.mkOption {
+        type = lib.types.str;
+        default = ".pi/decomp-matcher-jobs";
+        description = "Directory, relative to the Pi launch working directory when relative, in which retained matcher jobs are created.";
+      };
+
+      allowedModels = lib.mkOption {
+        type = lib.types.listOf (
+          lib.types.submodule {
+            options = {
+              provider = lib.mkOption { type = lib.types.str; };
+              model = lib.mkOption { type = lib.types.str; };
+              reasoning = lib.mkOption {
+                type = lib.types.enum [
+                  "off"
+                  "minimal"
+                  "low"
+                  "medium"
+                  "high"
+                  "xhigh"
+                  "max"
+                ];
+              };
+            };
+          }
+        );
+        default = [ ];
+        description = "Explicit provider, model, and reasoning triples that the matcher may launch.";
+      };
+
+      defaultModel = lib.mkOption {
+        type = lib.types.nullOr (
+          lib.types.submodule {
+            options = {
+              provider = lib.mkOption { type = lib.types.str; };
+              model = lib.mkOption { type = lib.types.str; };
+              reasoning = lib.mkOption {
+                type = lib.types.enum [
+                  "off"
+                  "minimal"
+                  "low"
+                  "medium"
+                  "high"
+                  "xhigh"
+                  "max"
+                ];
+              };
+            };
+          }
+        );
+        default = null;
+        description = "Default allowlisted provider, model, and reasoning triple for matcher jobs.";
+      };
     };
 
     fff.enable = lib.mkOption {
@@ -731,33 +794,51 @@ in
         ]);
       };
 
-    envDefault = {
-      PI_SKIP_VERSION_CHECK = "1";
-      PI_TELEMETRY = "0";
-      PI_TREE_SUMMARY_MODEL_ENABLED = if config.pi.cheapModels.treeSummary.enable then "1" else "0";
-      PI_COMPACTION_MODEL_ENABLED = if config.pi.cheapModels.compaction.enable then "1" else "0";
-    }
-    // lib.optionalAttrs config.pi.gondolin.enable {
-      PI_GONDOLIN_ENABLED = "1";
-      PI_GONDOLIN_GUEST_MOUNT_PATH = config.pi.gondolin.guestMountPath;
-    }
-    // lib.optionalAttrs config.pi.betterOpenAI.imageTool.enable {
-      PI_BETTER_OPENAI_IMAGE_TOOL = "1";
-    }
-    // lib.optionalAttrs config.pi.camofoxBrowser.enable (
+    envDefault =
+      assert lib.assertMsg (
+        !config.pi.decompMatcher.enable || config.pi.decompMatcher.defaultModel != null
+      ) "pi.decompMatcher.enable requires pi.decompMatcher.defaultModel";
+      assert lib.assertMsg (
+        !config.pi.decompMatcher.enable
+        || lib.any (
+          model: model == config.pi.decompMatcher.defaultModel
+        ) config.pi.decompMatcher.allowedModels
+      ) "pi.decompMatcher.defaultModel must be present in pi.decompMatcher.allowedModels";
       {
-        CAMOFOX_URL = config.pi.camofoxBrowser.url;
+        PI_SKIP_VERSION_CHECK = "1";
+        PI_TELEMETRY = "0";
+        PI_TREE_SUMMARY_MODEL_ENABLED = if config.pi.cheapModels.treeSummary.enable then "1" else "0";
+        PI_COMPACTION_MODEL_ENABLED = if config.pi.cheapModels.compaction.enable then "1" else "0";
       }
-      // lib.optionalAttrs (config.pi.camofoxBrowser.apiKeyFile != null) {
-        CAMOFOX_API_KEY_FILE = config.pi.camofoxBrowser.apiKeyFile;
+      // lib.optionalAttrs config.pi.decompMatcher.enable {
+        PI_DECOMP_MATCHER_CONFIG = builtins.toJSON {
+          version = 1;
+          jobRoot = config.pi.decompMatcher.jobRoot;
+          default = config.pi.decompMatcher.defaultModel;
+          allowed = config.pi.decompMatcher.allowedModels;
+        };
       }
-    )
-    // lib.optionalAttrs (config.pi.cheapModels.primary != null) {
-      PI_CHEAP_MODEL = config.pi.cheapModels.primary;
-    }
-    // lib.optionalAttrs (config.pi.cheapModels.fallbacks != [ ]) {
-      PI_CHEAP_FALLBACK_MODELS = lib.concatStringsSep "," config.pi.cheapModels.fallbacks;
-    };
+      // lib.optionalAttrs config.pi.gondolin.enable {
+        PI_GONDOLIN_ENABLED = "1";
+        PI_GONDOLIN_GUEST_MOUNT_PATH = config.pi.gondolin.guestMountPath;
+      }
+      // lib.optionalAttrs config.pi.betterOpenAI.imageTool.enable {
+        PI_BETTER_OPENAI_IMAGE_TOOL = "1";
+      }
+      // lib.optionalAttrs config.pi.camofoxBrowser.enable (
+        {
+          CAMOFOX_URL = config.pi.camofoxBrowser.url;
+        }
+        // lib.optionalAttrs (config.pi.camofoxBrowser.apiKeyFile != null) {
+          CAMOFOX_API_KEY_FILE = config.pi.camofoxBrowser.apiKeyFile;
+        }
+      )
+      // lib.optionalAttrs (config.pi.cheapModels.primary != null) {
+        PI_CHEAP_MODEL = config.pi.cheapModels.primary;
+      }
+      // lib.optionalAttrs (config.pi.cheapModels.fallbacks != [ ]) {
+        PI_CHEAP_FALLBACK_MODELS = lib.concatStringsSep "," config.pi.cheapModels.fallbacks;
+      };
 
     runtimePkgs = [
       agentTools
@@ -766,6 +847,7 @@ in
     # Python available to the agent regardless can add it to `runtimePkgs`.
     ++ lib.optionals (builtins.elem "session-reader" config.pi.localSkills) [ pkgs.python3 ]
     ++ lib.optionals config.pi.nixOptions.enable [ pkgs.nix ]
+    ++ lib.optionals config.pi.decompMatcher.enable [ pkgs.git ]
     ++ lib.optionals config.pi.review.enable [
       pkgs.git
       pkgs.gh

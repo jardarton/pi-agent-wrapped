@@ -177,6 +177,21 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
   `pi.mattPocockSkills`, `pi.camofoxBrowser`,
   `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
 
+The bounded decompilation matcher is separately opt-in. A concrete profile must
+provide an explicit default and allowlist; this generic wrapper ships no model
+or repository defaults:
+
+```nix
+{
+  pi.decompMatcher = {
+    enable = true;
+    jobRoot = ".pi/decomp-matcher-jobs";
+    allowedModels = [{ provider = "example"; model = "matcher"; reasoning = "low"; }];
+    defaultModel = { provider = "example"; model = "matcher"; reasoning = "low"; };
+  };
+}
+```
+
 When `tree-summary-model` is listed in `pi.bundledExtensions`, its two overrides
 can be controlled independently with `pi.cheapModels.treeSummary.enable` and
 `pi.cheapModels.compaction.enable`. Both default to `true` for compatibility;
