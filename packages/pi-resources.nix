@@ -1,5 +1,6 @@
 {
   buildNpmPackage,
+  git,
   lib,
   piPackage,
 }:
@@ -11,6 +12,7 @@ buildNpmPackage {
   src = ../extensions;
   npmDepsHash = "sha256-va3iMavra+OksZyj9EJKNdQiVPlWF2F6DMywIjINYOA=";
   npmDepsFetcherVersion = 2;
+  nativeBuildInputs = [ git ];
 
   buildPhase = ''
     runHook preBuild
