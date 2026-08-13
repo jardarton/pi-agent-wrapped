@@ -1,6 +1,6 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 import { createWriteStream } from "node:fs";
 import { mkdir, readFile, realpath, rename, writeFile } from "node:fs/promises";
@@ -76,6 +76,7 @@ function command(values: string[], replacement: Record<string, string>): string[
 	if (!values.length || values.some((value) => !value.trim())) throw new Error("scratchCommand must be a non-empty argv array");
 	return values.map((value) => value.replace(/\{(candidate|attemptDir|jobDir)\}/g, (_all, key) => replacement[key]));
 }
+function sha256(value: Buffer): string { return createHash("sha256").update(value).digest("hex"); }
 function git(root: string, excluded: string) {
 	const invoke = (args: string[]) => {
 		const result = spawnSync("git", ["-C", root, ...args], { encoding: "utf8" });
@@ -124,6 +125,8 @@ Repository root: ${manifest.repositoryRoot}
 Job directory: ${manifest.jobDirectory}
 Best candidate: ${manifest.paths.bestCandidate}
 Scratch command argv: ${JSON.stringify(manifest.scratchCommand)}
+Baseline attempt zero (this does not consume the attempt budget):
+${manifest.baseline ? JSON.stringify(manifest.baseline, null, 2) : "No initial candidate was provided, so no baseline was run."}
 
 Create a fresh directory below ${manifest.paths.attemptsDirectory} for each scratch attempt. Replace {candidate}, {attemptDir}, and {jobDir} in the command. Do not edit maintained source, configuration, symbols, or shared generated state. Never promote source or run a full build. Inline assembly is ${manifest.allowInlineAssembly ? "allowed only when narrowly scoped" : "forbidden"}. Stop after ${manifest.attempts} attempts and begin finalization by ${manifest.softSeconds} seconds; the runner kills you at ${manifest.hardSeconds} seconds.
 
@@ -157,11 +160,20 @@ async function dispatch(params: any, ctx: ExtensionContext, signal?: AbortSignal
 	if (params.softSeconds >= params.hardSeconds) throw new Error("softSeconds must be less than hardSeconds");
 	const launcher = getPiInvocationParts()[0];
 	const root = await realpath(ctx.cwd); const stamp = new Date().toISOString().replace(/[-:.]/g, "");
-	const job = path.join(config.jobRoot, `${stamp}-${randomBytes(5).toString("hex")}`); const paths = { manifest: path.join(job, "manifest.json"), completion: path.join(job, "completion.json"), result: path.join(job, "runner-result.json"), bestCandidate: path.join(job, "best-candidate.c"), attemptsDirectory: path.join(job, "attempts"), sessionDirectory: path.join(job, "session"), events: path.join(job, "child-events.jsonl"), stderr: path.join(job, "child.stderr.log") };
+	const job = path.join(config.jobRoot, `${stamp}-${randomBytes(5).toString("hex")}`); const attemptsDirectory = path.join(job, "attempts"); const paths = { manifest: path.join(job, "manifest.json"), completion: path.join(job, "completion.json"), result: path.join(job, "runner-result.json"), bestCandidate: path.join(job, "best-candidate.c"), baselineCandidate: path.join(job, "baseline-candidate.c"), attemptsDirectory, baselineDirectory: path.join(attemptsDirectory, "000-baseline"), sessionDirectory: path.join(job, "session"), events: path.join(job, "child-events.jsonl"), stderr: path.join(job, "child.stderr.log") };
 	await Promise.all([mkdir(paths.attemptsDirectory, { recursive: true }), mkdir(paths.sessionDirectory, { recursive: true })]);
-	if (params.initialCandidate) { const source = under(root, path.resolve(root, params.initialCandidate), "initialCandidate"); await writeFile(paths.bestCandidate, await readFile(source)); }
 	const before = git(root, job);
-	const manifest = { version: 1, jobDirectory: job, repositoryRoot: root, function: nonempty(params.function, "function"), task: nonempty(params.task, "task"), evidence: params.evidence.map((item: string) => path.resolve(root, item)), scratchCommand: params.scratchCommand, attempts: params.attempts, softSeconds: params.softSeconds, hardSeconds: params.hardSeconds, allowInlineAssembly: params.allowInlineAssembly, requested: selected, paths, before };
+	let baseline: any = null;
+	if (params.initialCandidate) {
+		const source = under(root, path.resolve(root, params.initialCandidate), "initialCandidate"); const candidate = await readFile(source);
+		await Promise.all([writeFile(paths.baselineCandidate, candidate), writeFile(paths.bestCandidate, candidate), mkdir(paths.baselineDirectory, { recursive: true })]);
+		const argv = command(params.scratchCommand, { candidate: paths.baselineCandidate, attemptDir: paths.baselineDirectory, jobDir: job }); const baselineStarted = Date.now();
+		const checked = spawnSync(argv[0], argv.slice(1), { cwd: root, encoding: "utf8", timeout: params.hardSeconds * 1000 });
+		const stdout = checked.stdout ?? ""; const stderr = checked.stderr ?? ""; const stdoutPath = path.join(paths.baselineDirectory, "stdout.log"); const stderrPath = path.join(paths.baselineDirectory, "stderr.log");
+		await Promise.all([writeFile(stdoutPath, stdout), writeFile(stderrPath, stderr)]);
+		baseline = { attempt: 0, candidatePath: paths.baselineCandidate, candidateSha256: sha256(candidate), command: argv, exitCode: checked.status, signal: checked.signal, stdout, stderr, error: checked.error?.message ?? null, elapsedMs: Date.now() - baselineStarted, artifactDirectory: paths.baselineDirectory, stdoutPath, stderrPath };
+	}
+	const manifest = { version: 1, jobDirectory: job, repositoryRoot: root, function: nonempty(params.function, "function"), task: nonempty(params.task, "task"), evidence: params.evidence.map((item: string) => path.resolve(root, item)), scratchCommand: params.scratchCommand, attempts: params.attempts, softSeconds: params.softSeconds, hardSeconds: params.hardSeconds, allowInlineAssembly: params.allowInlineAssembly, requested: selected, paths, before, baseline };
 	await atomic(paths.manifest, manifest);
 	const started = Date.now();
 	const processResult = await runChild(launcher, ["--mode", "json", "--session-dir", paths.sessionDirectory, "--provider", selected.provider, "--model", selected.model, "--thinking", selected.reasoning, childPrompt(manifest)], root, { ...process.env, PI_DECOMP_MATCHER_MANIFEST: paths.manifest, PI_DECOMP_MATCHER_CONFIG: process.env.PI_DECOMP_MATCHER_CONFIG! }, paths.events, paths.stderr, params.hardSeconds * 1000, signal);
@@ -169,7 +181,7 @@ async function dispatch(params: any, ctx: ExtensionContext, signal?: AbortSignal
 	try { if (processResult.exitCode !== 0 || processResult.signal || processResult.timedOut || processResult.cancelled) throw new Error("child did not exit normally"); validateCompletionEvent(await readFile(paths.events, "utf8")); completion = await validateCompletion(paths.completion, job, params.attempts); } catch (error) { completionError = error instanceof Error ? error.message : String(error); }
 	let recheck: any = null;
 	if (completion?.candidatePath) { const attemptDir = path.join(paths.attemptsDirectory, "authoritative-recheck"); await mkdir(attemptDir); const argv = command(params.scratchCommand, { candidate: completion.candidatePath, attemptDir, jobDir: job }); const checked = spawnSync(argv[0], argv.slice(1), { cwd: root, encoding: "utf8", timeout: params.hardSeconds * 1000 }); recheck = { command: argv, exitCode: checked.status, signal: checked.signal, stdout: checked.stdout ?? "", stderr: checked.stderr ?? "", error: checked.error?.message ?? null, artifactDirectory: attemptDir }; }
-	const after = git(root, job); const result = { version: 1, jobDirectory: job, resolved: selected, process: { ...processResult, elapsedMs: Date.now() - started }, completion, completionError, recheck, repository: { before, after, changed: JSON.stringify(before) !== JSON.stringify(after) }, session: paths.sessionDirectory };
+	const after = git(root, job); const result = { version: 1, jobDirectory: job, resolved: selected, baseline, process: { ...processResult, elapsedMs: Date.now() - started }, completion, completionError, recheck, repository: { before, after, changed: JSON.stringify(before) !== JSON.stringify(after) }, session: paths.sessionDirectory };
 	await atomic(paths.result, result); if (!completion) { const warning = result.repository.changed ? "; WARNING: repository state changed outside the matcher job" : ""; throw new Error(`${completionError}${warning}; retained job: ${job}`); } return result;
 }
 
