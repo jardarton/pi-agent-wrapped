@@ -37,6 +37,7 @@ let
   mcpAdapterPackage = piPackages.pi-mcp-adapter;
   reviewPackage = piPackages.pi-review;
   clarifyPackage = piPackages.pi-clarify;
+  metaOAuthPackage = piPackages.pi-meta-oauth;
   chromeCdpPackage = piPackages.pi-chrome-cdp;
   codexConversionPackage = piPackages.pi-codex-conversion;
   bundledExtensionPath = name: "${piResources}/share/pi-resources/extensions/${name}.ts";
@@ -281,6 +282,12 @@ in
             extensions = [ "${clarifyPackage}/share/pi-packages/clarify/extensions/clarify.ts" ];
           }
         ]
+        ++ lib.optionals config.pi.metaOAuth.enable [
+          {
+            package = metaOAuthPackage;
+            extensions = [ "${metaOAuthPackage}/share/pi-packages/meta-oauth/meta.ts" ];
+          }
+        ]
         ++ lib.optionals config.pi.chromeCdp.enable [
           {
             package = chromeCdpPackage;
@@ -416,6 +423,12 @@ in
       type = lib.types.bool;
       default = false;
       description = "Whether to expose the packaged prompt clarification extension.";
+    };
+
+    metaOAuth.enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether to expose the OAuth-only Meta Model API provider extension.";
     };
 
     chromeCdp.enable = lib.mkOption {

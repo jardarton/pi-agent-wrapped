@@ -100,10 +100,16 @@
       checks = forEachSystem (
         system:
         let
-          inherit (self.packages.${system}) pi-clarify pi-resources p;
+          inherit (self.packages.${system})
+            pi-clarify
+            pi-meta-oauth
+            pi-resources
+            p
+            ;
         in
         {
           clarify = pi-clarify;
+          meta-oauth = pi-meta-oauth;
           extensions = pi-resources;
           launcher = p;
 
@@ -144,6 +150,7 @@
               self.packages.${system}.pi-mcp-adapter
               self.packages.${system}.pi-review
               self.packages.${system}.pi-clarify
+              self.packages.${system}.pi-meta-oauth
               self.packages.${system}.pi-chrome-cdp
               self.packages.${system}.pi-codex-conversion
             ];

@@ -26,6 +26,7 @@ in
   pi-mcp-adapter = callPackage ./pi-packages/mcp-adapter.nix { };
   pi-review = callPackage ./pi-packages/review.nix { };
   pi-clarify = callPackage ./pi-packages/clarify.nix { };
+  pi-meta-oauth = callPackage ./pi-packages/meta-oauth.nix { };
   pi-chrome-cdp = callPackage ./pi-packages/chrome-cdp.nix { };
   pi-codex-conversion = callPackage ./pi-packages/codex-conversion.nix { };
 }

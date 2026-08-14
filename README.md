@@ -30,6 +30,7 @@ consumer's configuration. All defaults and default flake aliases are neutral.
 | `packages.<system>.pi-wrapped` | Full neutral wrapper package |
 | `packages.<system>.pi` | Unwrapped source-built Pi package |
 | `packages.<system>.pi-clarify` | Nix-packaged pi-clarify extension |
+| `packages.<system>.pi-meta-oauth` | Nix-packaged OAuth-only Meta Model API provider extension |
 | `packages.<system>.pi-codex-conversion` | Nix-packaged pi-codex-conversion extension |
 | `checks.<system>` | Extension tests, packaged integration checks, and the neutral wrapper build |
 
@@ -173,7 +174,7 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
 - `pi.appendSystemPrompt`, `pi.overrideSystemPrompt`
 - `pi.splash.enable` and `pi.splash.*` (see below)
 - opt-in integrations under `pi.fff`, `pi.dynamicWorkflows`, `pi.goal`, `pi.review`,
-  `pi.clarify`, `pi.chromeCdp`, `pi.codexConversion`, `pi.herdrIntegration`,
+  `pi.clarify`, `pi.metaOAuth`, `pi.chromeCdp`, `pi.codexConversion`, `pi.herdrIntegration`,
   `pi.mattPocockSkills`, `pi.camofoxBrowser`,
   `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
 
@@ -219,6 +220,18 @@ extension with:
 
 This exposes `/clarify` and the `-clarify` input marker. The integration is
 disabled by default.
+
+Enable only the Meta Model API provider and OAuth flow with:
+
+```nix
+{
+  pi.metaOAuth.enable = true;
+}
+```
+
+This packages only upstream's `extensions/meta.ts`. It does not expose the
+media tools, automatic file attachments, voice capture, or native voice helpers.
+The integration is disabled by default.
 
 Enable the packaged [chrome-cdp](https://github.com/pasky/chrome-cdp-skill)
 skill with:

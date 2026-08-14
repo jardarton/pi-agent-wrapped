@@ -143,6 +143,31 @@ nix fmt
 nix build .#pi-clarify .#p
 ```
 
+### Meta OAuth package
+
+`packages/pi-packages/meta-oauth.nix` packages only the Meta Model API provider
+and OAuth flow from `pi-meta-oauth`:
+
+- repo: <https://github.com/BlockedPath/pi-meta-oauth>
+- extension used: `extensions/meta.ts`
+- flake package: `.#pi-meta-oauth`
+- wrapper option: `pi.metaOAuth.enable` (disabled by default)
+
+The media and voice extension entry points are deliberately not copied into the
+package output. Update the pinned version, revision, and source hash with:
+
+```bash
+rev=$(git ls-remote https://github.com/BlockedPath/pi-meta-oauth HEAD | awk '{print $1}')
+nix flake prefetch --json "github:BlockedPath/pi-meta-oauth/$rev"
+```
+
+Then run:
+
+```bash
+nix fmt
+nix build .#pi-meta-oauth .#p
+```
+
 ### Chrome CDP skill package
 
 `packages/pi-packages/chrome-cdp.nix` packages Pasky's `chrome-cdp` skill as a
