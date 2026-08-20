@@ -3,6 +3,7 @@
   buildNpmPackage,
   fetchFromGitHub,
   rustPlatform,
+  bun,
   cargo,
   rustc,
   stdenv,
@@ -28,8 +29,8 @@ buildNpmPackage rec {
   src = fetchFromGitHub {
     owner = "dmtrKovalenko";
     repo = "fff";
-    rev = "b6f351d7295d3f89d4f9ecaa94d72089964edc0f";
-    hash = "sha256-axuqlXjTp08CjhZ8WB27d+89jih6JXJuES1vvXLHNBA=";
+    rev = "d01cc483ca67263e92c303c204d90764216376da";
+    hash = "sha256-LwdQuZkYwdGtzG/zsL3fhect+uTxAYrP6jxs6i0fSqk=";
   };
 
   npmDepsHash = "sha256-9bDNsPKZILm4dc+2z69xu9nnE07uJUHXcOv20HBb1Ow=";
@@ -37,7 +38,7 @@ buildNpmPackage rec {
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit src;
-    hash = "sha256-iRQa3K5/E520hbq6yO+RRG8pjJBTamj/nm13XCHNOZs=";
+    hash = "sha256-TLr6Q7cpxQi/bHzDHa08W7m4kajeVqywVDrRmcr7VJg=";
   };
 
   postPatch = ''
@@ -53,6 +54,7 @@ buildNpmPackage rec {
 
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
+    bun
     cargo
     rustc
   ];
