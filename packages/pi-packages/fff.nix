@@ -50,6 +50,22 @@ buildNpmPackage rec {
     done
     substituteInPlace package-lock.json \
       --replace-warn $'        "@ff-labs/fff-bin-android-arm64": "0.0.0",\n' ""
+
+    # Bun bakes its build-time __dirname into fff-node's ESM bundle, making
+    # runtime library lookup start under /build/source. Anchor lookup to the
+    # immutable Nix package and prefer its bundled native library.
+    package_dir="$out/share/pi-packages/fff/node_modules/@ff-labs/fff-node"
+    get_current_dir="function getCurrentDir(): string {
+      return \"$package_dir\";
+    }"
+    substituteInPlace packages/fff-node/src/binary.ts \
+      --replace-fail \
+        $'function getCurrentDir(): string {\n  // CJS build: import.meta.url is inlined at bundle time, __dirname is the truth\n  if (typeof __dirname !== "undefined") return __dirname;\n\n  const url = import.meta.url;\n\n  if (url.startsWith("file://")) {\n    return dirname(fileURLToPath(url));\n  }\n  return dirname(url);\n}' \
+        "$get_current_dir"
+    substituteInPlace packages/fff-node/src/binary.ts \
+      --replace-fail \
+        $'export function findBinary(): string | null {\n  if (isDevWorkspace()) {' \
+        $'export function findBinary(): string | null {\n  const bundledPath = join(getPackageDir(), "bin", getLibFilename());\n  if (existsSync(bundledPath)) return bundledPath;\n\n  if (isDevWorkspace()) {'
   '';
 
   nativeBuildInputs = [
