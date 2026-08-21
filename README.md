@@ -151,6 +151,17 @@ inputs.pi-agent-wrapped.wrappers.pi.wrap {
 }
 ```
 
+Pinned pstack skills can be selected independently for each profile:
+
+```nix
+{
+  pi.pstackSkills = {
+    enable = true;
+    skills = [ "blast-radius" "how" "tdd" ];
+  };
+}
+```
+
 Or extend the evaluated module yourself:
 
 ```nix
@@ -175,7 +186,7 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
 - `pi.splash.enable` and `pi.splash.*` (see below)
 - opt-in integrations under `pi.fff`, `pi.dynamicWorkflows`, `pi.goal`, `pi.review`,
   `pi.clarify`, `pi.metaOAuth`, `pi.chromeCdp`, `pi.codexConversion`, `pi.herdrIntegration`,
-  `pi.mattPocockSkills`, `pi.camofoxBrowser`,
+  `pi.mattPocockSkills`, `pi.pstackSkills`, `pi.camofoxBrowser`,
   `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
 
 The bounded decompilation matcher is separately opt-in. A concrete profile must
