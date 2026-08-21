@@ -34,7 +34,7 @@ Sanity checks:
 
 ```bash
 node --input-type=module - <<'JS'
-import { FileFinder } from './result-1/share/pi-packages/fff/node_modules/@ff-labs/fff-node/dist/src/index.js';
+import { FileFinder } from './result-1/share/pi-packages/fff/node_modules/@ff-labs/fff-node/dist/index.js';
 console.log(typeof FileFinder);
 JS
 ```
