@@ -102,6 +102,18 @@ let
       ''}
     '') config.pi.mattPocockSkills.skills}
   '';
+  pstackSkillsPackage = pkgs.runCommand "pi-package-pstack-skills" { } ''
+    set -euo pipefail
+
+    base="$out/share/pi-packages/pstack-skills"
+    mkdir -p "$base"
+
+    ${lib.concatMapStringsSep "\n" (skill: ''
+      src_path="${config.pi.pstackSkills.source}/pstack/skills/${skill}"
+      dst_path="$base/${skill}"
+      cp -R "$src_path" "$dst_path"
+    '') config.pi.pstackSkills.skills}
+  '';
   piResourcePackageType = lib.types.submodule {
     options = {
       package = lib.mkOption {
@@ -170,6 +182,12 @@ let
       skill: "${mattPocockSkillsPackage}/share/pi-packages/mattpocock-skills/${skill}"
     ) config.pi.mattPocockSkills.skills;
   };
+  pstackResourcePackage = lib.optional config.pi.pstackSkills.enable {
+    package = pstackSkillsPackage;
+    skills = map (
+      skill: "${pstackSkillsPackage}/share/pi-packages/pstack-skills/${skill}"
+    ) config.pi.pstackSkills.skills;
+  };
 in
 {
   inherit
@@ -193,6 +211,8 @@ in
     piPackages
     piResourcePackageType
     piResources
+    pstackResourcePackage
+    pstackSkillsPackage
     resourceDirs
     resourcePackageResources
     reviewPackage

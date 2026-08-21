@@ -17,6 +17,7 @@ let
     mcpAdapterPackage
     metaOAuthPackage
     piResourcePackageType
+    pstackResourcePackage
     reviewPackage
     chromeCdpPackage
     ;
@@ -85,7 +86,8 @@ in
             ];
           }
         ]
-        ++ mattPocockResourcePackage;
+        ++ mattPocockResourcePackage
+        ++ pstackResourcePackage;
       description = "Nix-built Pi packages exposed as generated settings resources.";
     };
 
@@ -228,6 +230,46 @@ in
             hiddenSkills
           else
             throw "pi.mattPocockSkills.hiddenSkills must be a subset of pi.mattPocockSkills.skills. Extra entries: ${lib.concatStringsSep ", " extras}";
+      };
+    };
+
+    pstackSkills = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Whether to expose selected pstack skills from the pinned Cursor plugins snapshot.";
+      };
+
+      source = lib.mkOption {
+        type = lib.types.package;
+        default = pkgs.fetchFromGitHub {
+          owner = "cursor";
+          repo = "plugins";
+          rev = "46125561306434d8a1d7745d540d8932ab0cd2a2";
+          hash = "sha256-rTkT/2dliMzvwDkza2+JNhSIzcTr9fXjvK2zwi/lRl8=";
+        };
+        description = "Pinned Cursor plugins source checkout containing the pstack skills.";
+      };
+
+      skills = lib.mkOption {
+        type = lib.types.listOf (
+          lib.types.enum (
+            builtins.attrNames (
+              lib.filterAttrs (
+                name: type:
+                type == "directory"
+                && builtins.pathExists "${config.pi.pstackSkills.source}/pstack/skills/${name}/SKILL.md"
+              ) (builtins.readDir "${config.pi.pstackSkills.source}/pstack/skills")
+            )
+          )
+        );
+        default = [ ];
+        example = [
+          "blast-radius"
+          "how"
+          "tdd"
+        ];
+        description = "Names of pstack skill directories to expose to Pi.";
       };
     };
 
