@@ -10,8 +10,8 @@
 }:
 
 let
-  version = "3.0.12";
-  rev = "9091915b8b77a9539b274f0a6e3babf4a89cf3ba";
+  version = "3.0.23";
+  rev = "fa39a620e0b371bf27f57ed88abab992a3d69e94";
 
   # Build the pidex fork from source. The repository uses Bun, while
   # buildNpmPackage needs an npm lock, so the adjacent lockfile is generated
@@ -20,7 +20,7 @@ let
     owner = "jardarton";
     repo = "pidex";
     inherit rev;
-    hash = "sha256-G2xnYlHFrmoFi+3hmCRyuhgDTpz1K4z2KWVhPKZ9N5Y=";
+    hash = "sha256-u5n0RpjzUagmEPQxMYjFEu6y8KT3oTwTNPXWT74ipqw=";
   };
 
   # Node's `${process.platform}-${process.arch}`, which the extension uses to
@@ -72,7 +72,7 @@ buildNpmPackage {
 
   sourceRoot = "source";
 
-  npmDepsHash = "sha256-2jekxdyVcIEbeCYsIRixf9UV7RgZjm4UVCmm4XvXTJQ=";
+  npmDepsHash = "sha256-tNOacB+TDgZucok9aFg5gdPwPpasbd5AJKiR1LbTu1w=";
   npmDepsFetcherVersion = 2;
   npmFlags = [
     "--ignore-scripts"
@@ -92,6 +92,29 @@ buildNpmPackage {
   postPatch = ''
     cp packages/pi-codex-conversion/package.json package.json
     cp ${./codex-conversion/package-lock.json} package-lock.json
+    add_integrity() {
+      resolved="https://registry.npmjs.org/@earendil-works/$1/-/$1-0.84.3.tgz"
+      substituteInPlace package-lock.json \
+        --replace-fail \
+          "\"version\": \"0.84.3\","$'\n      '"\"resolved\": \"$resolved\","$'\n      '"\"dev\": true," \
+          "\"version\": \"0.84.3\","$'\n      '"\"resolved\": \"$resolved\","$'\n      '"\"integrity\": \"$2\","$'\n      '"\"dev\": true,"
+    }
+    add_integrity pi-agent-core 'sha512-VURr+xBRl3RxYcw3kT9Pn3yfi6LbRoCJgHF7h1mAblMjtLNV/MfG/RyF0uJizBAM886AEakSiw3j9c/aSngppg=='
+    add_integrity pi-ai 'sha512-M0YUV8vNO3y2WwWSyY8ijKJV5W4gkSUixuvk+Z00ZBjsyMfsdXfITsHEwP1UIf09YRWXT6oGn0GlCamt+P32XQ=='
+    add_integrity pi-client 'sha512-zfErYane+390W0xpBJ/FWCp6aktPpkpcIcXUeZiAziWLoxE80ZNQALRyOSa/gGS5V+1OkNnMYxRxbzN0zUvnOA=='
+    add_integrity pi-protocol 'sha512-9a4g6WhLOvRqvsIOFaWxg/2gdrbY4Thclwj5ipLUPAWChfsDJ/8XdPc2sRhSOkD6EsxpEFJz3xppcfwI6EcZDg=='
+    add_integrity pi-telemetry 'sha512-sgEkWoKrvSGaKn+YfLLFZmn+/A7B/w62eLwTD57nI+C9to8ITlFFVbgC2OtwvPnT3NFGHdCd53qhBEMIlptD1g=='
+    add_integrity pi-tui 'sha512-fS6OEQKEEALnKa6Uw8LcgZZ+9CWck7f3MQSCETQp6leUgIFwMEDtKmOUnL9nsYm+RIPmy7OmplVxYRbV6hiaFg=='
+    substituteInPlace packages/pi-codex-conversion/src/tools/code-mode/notebook-tool.ts \
+      --replace-fail \
+        'import { Type } from "typebox";' \
+        'import { Type, type TSchema } from "typebox";' \
+      --replace-fail \
+        'export const NOTEBOOK_PARAMETERS = Type.Union([' \
+        'export const NOTEBOOK_PARAMETERS: TSchema = Type.Union([' \
+      --replace-fail \
+        'executeNotebookControl(runtime, params, {' \
+        'executeNotebookControl(runtime, params as NotebookToolParameters, {'
   '';
 
   # The only install script in the dependency tree builds tree-sitter-bash's
@@ -131,6 +154,12 @@ buildNpmPackage {
     mkdir -p "$package_dir"
     cp package.json README.md CHANGELOG.md LICENSE UPSTREAM_SYNC.md "$package_dir/"
     cp -R dist src ../../node_modules "$package_dir/"
+
+    ${lib.optionalString stdenv.hostPlatform.isLinux ''
+      find "$package_dir/node_modules/zeromq/build/linux/${
+        if stdenv.hostPlatform.isAarch64 then "arm64" else "x64"
+      }/node" -mindepth 1 -maxdepth 1 -type d -name 'musl-*' -exec rm -rf {} +
+    ''}
 
     host_dir="$package_dir/code-mode/bin/${targetDir}"
     mkdir -p "$host_dir"

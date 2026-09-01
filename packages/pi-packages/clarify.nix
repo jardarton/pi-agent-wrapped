@@ -12,8 +12,8 @@ stdenvNoCC.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "dodo-reach";
     repo = "pi-clarify";
-    rev = "4dd69f03e7e8ff77502aecc33e6798af93f6da0a";
-    hash = "sha256-6Whi1NNyuef22075T3cNkZDKMK3SxbS6VKTnBzdbwes=";
+    rev = "aa2a7a1fa3446cd2700fcd68e10158b2809b10ac";
+    hash = "sha256-LS4oNBgKGZoHwNybrUxCKCYGdsqnPzZrS+niE1XXQu8=";
   };
 
   nativeCheckInputs = [ nodejs_22 ];
