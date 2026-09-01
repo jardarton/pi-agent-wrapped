@@ -29,43 +29,41 @@ buildNpmPackage rec {
   src = fetchFromGitHub {
     owner = "dmtrKovalenko";
     repo = "fff";
-    rev = "d01cc483ca67263e92c303c204d90764216376da";
-    hash = "sha256-LwdQuZkYwdGtzG/zsL3fhect+uTxAYrP6jxs6i0fSqk=";
+    rev = "d84c0a10cd5ea23285cb5575fa90179f51710f99";
+    hash = "sha256-xODvvcFtALKmWkgJjr2O6wc+TZCv9Eh8CVpJeF+NNqg=";
   };
 
-  npmDepsHash = "sha256-9bDNsPKZILm4dc+2z69xu9nnE07uJUHXcOv20HBb1Ow=";
+  npmDepsHash = "sha256-d6LEpW/hyYySLDMFBQufRb3M8wg2i9DX0gu4qtQjq08=";
   npmDepsFetcherVersion = 2;
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit src;
-    hash = "sha256-TLr6Q7cpxQi/bHzDHa08W7m4kajeVqywVDrRmcr7VJg=";
+    hash = "sha256-mt5T9Cs174pc1CtrPZE6hwYZ3eSaGhCRL94trcoZn4Q=";
   };
 
   postPatch = ''
-    for file in packages/fff-node/package.json packages/fff-bun/package.json; do
-      substituteInPlace "$file" \
+      cp ${./fff-package-lock.json} package-lock.json
+      substituteInPlace package.json \
         --replace-fail \
-          $'    "@ff-labs/fff-bin-win32-arm64": "0.0.0",\n    "@ff-labs/fff-bin-android-arm64": "0.0.0"' \
-          $'    "@ff-labs/fff-bin-win32-arm64": "0.0.0"'
-    done
-    substituteInPlace package-lock.json \
-      --replace-warn $'        "@ff-labs/fff-bin-android-arm64": "0.0.0",\n' ""
+          '  "private": true,' \
+          '  "private": true,
+    "workspaces": ["packages/fff-bun", "packages/fff-node", "packages/pi-fff"],'
 
-    # Bun bakes its build-time __dirname into fff-node's ESM bundle, making
-    # runtime library lookup start under /build/source. Anchor lookup to the
-    # immutable Nix package and prefer its bundled native library.
-    package_dir="$out/share/pi-packages/fff/node_modules/@ff-labs/fff-node"
-    get_current_dir="function getCurrentDir(): string {
-      return \"$package_dir\";
-    }"
-    substituteInPlace packages/fff-node/src/binary.ts \
-      --replace-fail \
-        $'function getCurrentDir(): string {\n  // CJS build: import.meta.url is inlined at bundle time, __dirname is the truth\n  if (typeof __dirname !== "undefined") return __dirname;\n\n  const url = import.meta.url;\n\n  if (url.startsWith("file://")) {\n    return dirname(fileURLToPath(url));\n  }\n  return dirname(url);\n}' \
-        "$get_current_dir"
-    substituteInPlace packages/fff-node/src/binary.ts \
-      --replace-fail \
-        $'export function findBinary(): string | null {\n  if (isDevWorkspace()) {' \
-        $'export function findBinary(): string | null {\n  const bundledPath = join(getPackageDir(), "bin", getLibFilename());\n  if (existsSync(bundledPath)) return bundledPath;\n\n  if (isDevWorkspace()) {'
+      # Bun bakes its build-time __dirname into fff-node's ESM bundle, making
+      # runtime library lookup start under /build/source. Anchor lookup to the
+      # immutable Nix package and prefer its bundled native library.
+      package_dir="$out/share/pi-packages/fff/node_modules/@ff-labs/fff-node"
+      get_current_dir="function getCurrentDir(): string {
+        return \"$package_dir\";
+      }"
+      substituteInPlace packages/fff-node/src/binary.ts \
+        --replace-fail \
+          $'function getCurrentDir(): string {\n  // CJS build: import.meta.url is inlined at bundle time, __dirname is the truth\n  if (typeof __dirname !== "undefined") return __dirname;\n\n  const url = import.meta.url;\n\n  if (url.startsWith("file://")) {\n    return dirname(fileURLToPath(url));\n  }\n  return dirname(url);\n}' \
+          "$get_current_dir"
+      substituteInPlace packages/fff-node/src/binary.ts \
+        --replace-fail \
+          $'export function findBinary(): string | null {\n  if (isDevWorkspace()) {' \
+          $'export function findBinary(): string | null {\n  const bundledPath = join(getPackageDir(), "bin", getLibFilename());\n  if (existsSync(bundledPath)) return bundledPath;\n\n  if (isDevWorkspace()) {'
   '';
 
   nativeBuildInputs = [

@@ -6,26 +6,32 @@
 
 buildNpmPackage rec {
   pname = "pi-mcp-adapter";
-  version = "2.15.0";
+  version = "2.31.0";
 
   src = fetchFromGitHub {
     owner = "nicobailon";
     repo = "pi-mcp-adapter";
-    rev = "e588296e28b36a22b081d40fcfba76f418d6f84e";
-    hash = "sha256-X9EfaPjUVpH85SLjEFbaApqlgtMIdm1yyn9/lui8NKc=";
+    rev = "fad5f4c648dc2ba6ec0576fdef6e64d2c7c0368c";
+    hash = "sha256-xlp7KBULl90N+ZAumCppsTT78zW0q2o6H3uTHXaLNLk=";
   };
 
   postPatch = ''
-    substituteInPlace package-lock.json \
-      --replace-fail '"resolved": "https://registry.npmjs.org/@earendil-works/pi-agent-core/-/pi-agent-core-0.79.10.tgz",' '"resolved": "https://registry.npmjs.org/@earendil-works/pi-agent-core/-/pi-agent-core-0.79.10.tgz",
-      "integrity": "sha512-XKxgdjhcPuyjrthCOFSgfzT3xZ1uBrJ1IMVDxci1to6hIN6BIg9J5iY8q0pGXK1DLgATLP23da+1UyZLwA360Q==",' \
-      --replace-fail '"resolved": "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-0.79.10.tgz",' '"resolved": "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-0.79.10.tgz",
-      "integrity": "sha512-9jR23tOl0BIUdQMn70Gr72xYBpM7Xgl9Lyv7gAnU1USfkNRuYG/f/edLl+n/Dp/RafDW3JI4DF7y/GhgkORuew==",' \
-      --replace-fail '"resolved": "https://registry.npmjs.org/@earendil-works/pi-tui/-/pi-tui-0.79.10.tgz",' '"resolved": "https://registry.npmjs.org/@earendil-works/pi-tui/-/pi-tui-0.79.10.tgz",
-      "integrity": "sha512-FUVOjDn1DVwM1uHD5MNYboXQrXjIDbSt+BQ3py7nQWCY62tKfxgiM1OBMxTcwRWLfSdZHUPpV0hm1loIdUJnPw==",'
+    add_integrity() {
+      resolved="https://registry.npmjs.org/@earendil-works/$1/-/$1-0.84.1.tgz"
+      substituteInPlace package-lock.json \
+        --replace-fail \
+          "\"version\": \"0.84.1\","$'\n      '"\"resolved\": \"$resolved\","$'\n      '"\"dev\": true," \
+          "\"version\": \"0.84.1\","$'\n      '"\"resolved\": \"$resolved\","$'\n      '"\"integrity\": \"$2\","$'\n      '"\"dev\": true,"
+    }
+    add_integrity pi-agent-core 'sha512-evyzXYWCLQGmcaBYHlmSku02r8qoN4SGI60GZABo6iV+H+nqX+P9ud8fEZ4GmRq9mUSREvvfX+w9dA9ThF9C6w=='
+    add_integrity pi-ai 'sha512-wMsAdJMxuNri08vLqTyYVI201DQQezGhPSTkzYsHdw5dYX3rCNwEmSvpaAwhi7ELKI/2tE/CEgSWg/6iRxSgdQ=='
+    add_integrity pi-client 'sha512-/V5hGHE4Zq+jG0GtwIB9PyBUOGd6gBLZ7lkQYFKchKnxYHeH3rmWC5xw4kpnZKKBuBuFTdLVbU9vEjlAGMMb2A=='
+    add_integrity pi-protocol 'sha512-Ox1pciyeSPGEEUcxvR0/dJcrY7C6hrEGA8y71rOsvSIUlXN1Cbp/be/eoL71OGDBk5O97TeQPfWN6Ju/2Ehjww=='
+    add_integrity pi-telemetry 'sha512-180/xGJtsq7IoR3p9EKWjRd0e9M4DkxInhlo9xyD7prDC7Qrhqq+nhvwrW0lFjPfXcEI2FSHmGCSyvSJE9GsaQ=='
+    add_integrity pi-tui 'sha512-udeXFbgEhJ6JiB0uguwNVNkDy2FENfmtQwPcY+/iJ8GWeq18wkal1tKqa5YyeH0IqtX1vG0cGh8zfSYzyzVuLA=='
   '';
 
-  npmDepsHash = "sha256-tfBvnkPPT8MfoQ1JN6x0TsqUmrohM2idbX27uJAGimQ=";
+  npmDepsHash = "sha256-sZ8vmuoJBa/FQQgGTa+BVEYQC9S5rjzm/4d0ArwMXGY=";
   npmDepsFetcherVersion = 2;
 
   dontNpmBuild = true;
