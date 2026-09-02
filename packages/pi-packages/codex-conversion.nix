@@ -152,7 +152,7 @@ buildNpmPackage {
 
     package_dir="$out/share/pi-packages/codex-conversion"
     mkdir -p "$package_dir"
-    cp package.json README.md CHANGELOG.md LICENSE UPSTREAM_SYNC.md "$package_dir/"
+    cp package.json README.md CHANGELOG.md LICENSE UPSTREAM_SYNC.md changelog.js "$package_dir/"
     cp -R dist src ../../node_modules "$package_dir/"
 
     ${lib.optionalString stdenv.hostPlatform.isLinux ''
