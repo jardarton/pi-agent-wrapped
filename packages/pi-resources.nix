@@ -10,7 +10,7 @@ buildNpmPackage {
   version = "0.1.0";
 
   src = ../extensions;
-  npmDepsHash = "sha256-va3iMavra+OksZyj9EJKNdQiVPlWF2F6DMywIjINYOA=";
+  npmDepsHash = "sha256-JQgb0jwmWYHcYNY1IOX0TFdLzpzGXpP/OwAtsQuomrs=";
   npmDepsFetcherVersion = 2;
   nativeBuildInputs = [ git ];
 
@@ -36,7 +36,7 @@ buildNpmPackage {
     npm run check
     npm prune --omit=dev
 
-    if [ -e node_modules/@earendil-works/pi-coding-agent ] || [ -e node_modules/@earendil-works/pi-ai ] || [ -e node_modules/@earendil-works/pi-tui ]; then
+    if [ -e node_modules/@earendil-works/pi-coding-agent ] || [ -e node_modules/@earendil-works/pi-ai ] || [ -e node_modules/@earendil-works/pi-tui ] || [ -e node_modules/@earendil-works/pi-server ]; then
       echo "Pi runtime packages must not be vendored into extension resources" >&2
       exit 1
     fi

@@ -6,12 +6,11 @@
   fetchurl,
   autoPatchelfHook,
   alsa-lib,
-  openssl,
 }:
 
 let
-  version = "3.0.23";
-  rev = "fa39a620e0b371bf27f57ed88abab992a3d69e94";
+  version = "3.0.25";
+  rev = "69941885c5def4bc97a97698b99d9edb23221529";
 
   # Build the pidex fork from source. The repository uses Bun, while
   # buildNpmPackage needs an npm lock, so the adjacent lockfile is generated
@@ -20,7 +19,7 @@ let
     owner = "jardarton";
     repo = "pidex";
     inherit rev;
-    hash = "sha256-u5n0RpjzUagmEPQxMYjFEu6y8KT3oTwTNPXWT74ipqw=";
+    hash = "sha256-51bbEpSy/1xdF3lJOvsO6ywnM9F+1mv7BBVdukvksvQ=";
   };
 
   # Node's `${process.platform}-${process.arch}`, which the extension uses to
@@ -72,7 +71,7 @@ buildNpmPackage {
 
   sourceRoot = "source";
 
-  npmDepsHash = "sha256-tNOacB+TDgZucok9aFg5gdPwPpasbd5AJKiR1LbTu1w=";
+  npmDepsHash = "sha256-ueMxdmgh8GEMKL8Fa9rJppB3Bcan+n7nKbfNEpBpNr0=";
   npmDepsFetcherVersion = 2;
   npmFlags = [
     "--ignore-scripts"
@@ -81,30 +80,17 @@ buildNpmPackage {
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
 
-  # The bundled helpers are prebuilt glibc binaries: `imagegen` and `web_run`
-  # link OpenSSL, `pi-codex-voice` links ALSA, and all of them link libgcc.
+  # The bundled helpers are prebuilt glibc binaries: `pi-codex-voice` links
+  # ALSA, and every one of them links libgcc. Both Linux targets shipped in the
+  # tarball need exactly these.
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     alsa-lib
-    openssl
     stdenv.cc.cc.lib
   ];
 
   postPatch = ''
     cp packages/pi-codex-conversion/package.json package.json
     cp ${./codex-conversion/package-lock.json} package-lock.json
-    add_integrity() {
-      resolved="https://registry.npmjs.org/@earendil-works/$1/-/$1-0.84.3.tgz"
-      substituteInPlace package-lock.json \
-        --replace-fail \
-          "\"version\": \"0.84.3\","$'\n      '"\"resolved\": \"$resolved\","$'\n      '"\"dev\": true," \
-          "\"version\": \"0.84.3\","$'\n      '"\"resolved\": \"$resolved\","$'\n      '"\"integrity\": \"$2\","$'\n      '"\"dev\": true,"
-    }
-    add_integrity pi-agent-core 'sha512-VURr+xBRl3RxYcw3kT9Pn3yfi6LbRoCJgHF7h1mAblMjtLNV/MfG/RyF0uJizBAM886AEakSiw3j9c/aSngppg=='
-    add_integrity pi-ai 'sha512-M0YUV8vNO3y2WwWSyY8ijKJV5W4gkSUixuvk+Z00ZBjsyMfsdXfITsHEwP1UIf09YRWXT6oGn0GlCamt+P32XQ=='
-    add_integrity pi-client 'sha512-zfErYane+390W0xpBJ/FWCp6aktPpkpcIcXUeZiAziWLoxE80ZNQALRyOSa/gGS5V+1OkNnMYxRxbzN0zUvnOA=='
-    add_integrity pi-protocol 'sha512-9a4g6WhLOvRqvsIOFaWxg/2gdrbY4Thclwj5ipLUPAWChfsDJ/8XdPc2sRhSOkD6EsxpEFJz3xppcfwI6EcZDg=='
-    add_integrity pi-telemetry 'sha512-sgEkWoKrvSGaKn+YfLLFZmn+/A7B/w62eLwTD57nI+C9to8ITlFFVbgC2OtwvPnT3NFGHdCd53qhBEMIlptD1g=='
-    add_integrity pi-tui 'sha512-fS6OEQKEEALnKa6Uw8LcgZZ+9CWck7f3MQSCETQp6leUgIFwMEDtKmOUnL9nsYm+RIPmy7OmplVxYRbV6hiaFg=='
     substituteInPlace packages/pi-codex-conversion/src/tools/code-mode/notebook-tool.ts \
       --replace-fail \
         'import { Type } from "typebox";' \

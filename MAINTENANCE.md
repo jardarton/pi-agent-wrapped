@@ -240,9 +240,14 @@ cp ../pidex/packages/pi-codex-conversion/package.json "$tmp/"
 cp "$tmp/package-lock.json" "$vendored/"
 ```
 
+Every registry entry in the lock must have an `integrity` field;
+`prefetch-npm-deps` rejects incomplete npm lock entries. npm omits the field for
+the `@earendil-works/*` copies nested under `pi-coding-agent`, so fill them in with
+the script in [Bundled extensions](#bundled-extensions), pointed at
+`packages/pi-packages/codex-conversion/package-lock.json`.
+
 Replace `npmDepsHash` with `lib.fakeHash`, run `nix build .#pi-codex-conversion`,
-and put the reported hash back. Every registry entry in the lock must have an
-`integrity` field; `prefetch-npm-deps` rejects incomplete npm lock entries.
+and put the reported hash back.
 
 When the build reports that the code-mode host release moved, read the new
 values out of the built source and update `hostRelease` and `hostAssets`:
@@ -502,3 +507,57 @@ nix build .#p --no-link --builders ''
 - `npmRebuildFlags = [ "--ignore-scripts" ]` avoids native rebuild issues during the offline npm setup phase.
 - `packages/pi-resources.nix` warns instead of failing on extension devDependency Pi-version mismatch when the Pi package is a source-built main commit (`piPackage.rev` exists).
 - Do not reintroduce the `llm-agents` flake input just for Pi updates.
+
+## Bundled extensions
+
+`extensions/` holds this repo's own Pi extensions. `packages/pi-resources.nix` builds
+them, and its build fails when the `@earendil-works/pi-coding-agent` devDependency in
+`extensions/package.json` does not match the runtime Pi version. Keep that pin exact,
+not a range: the check compares the two strings, so `^0.84.0` never matches `0.84.4`.
+
+Update steps:
+
+```sh
+cd extensions
+# Pin the Pi packages to the version of the Pi package in packages/pi/hashes.json.
+npm --userconfig /dev/null install
+npm --userconfig /dev/null run check
+```
+
+`@earendil-works/pi-server` is a devDependency even though no extension imports it.
+`pi-coding-agent`'s `dist/index.js` re-exports `main`, which pulls in
+`dist/experimental/server.js`, which imports `@earendil-works/pi-server`;
+`pi-coding-agent` does not declare that dependency itself. Without the explicit
+devDependency, every test that imports `@earendil-works/pi-coding-agent` fails with
+`ERR_MODULE_NOT_FOUND`.
+
+npm writes the duplicate `@earendil-works/*` entries nested under
+`node_modules/@earendil-works/pi-coding-agent/node_modules/` without `integrity`
+fields, and the Nix npm dependency fetcher rejects that with `non-git dependencies
+should have associated integrity`. `npm dedupe` does not remove them. Fill the fields
+in after any `npm install` here:
+
+```sh
+node -e '
+const fs = require("fs"), { execFileSync } = require("child_process");
+const lock = JSON.parse(fs.readFileSync("package-lock.json", "utf8"));
+for (const [key, node] of Object.entries(lock.packages)) {
+  if (!key || node.link || node.integrity || !node.resolved) continue;
+  const name = key.slice(key.lastIndexOf("node_modules/") + 13);
+  const integrity = execFileSync("npm", ["--userconfig", "/dev/null", "view", `${name}@${node.version}`, "dist.integrity"], { encoding: "utf8" }).trim();
+  const rebuilt = {};
+  for (const [k, v] of Object.entries(node)) { rebuilt[k] = v; if (k === "resolved") rebuilt.integrity = integrity; }
+  lock.packages[key] = rebuilt;
+}
+fs.writeFileSync("package-lock.json", JSON.stringify(lock, null, 2) + "\n");
+'
+rm -rf node_modules && npm --userconfig /dev/null ci
+```
+
+Then replace `npmDepsHash` in `packages/pi-resources.nix` with `lib.fakeHash`, run
+`nix build .#pi-resources`, copy the reported hash back, and validate:
+
+```sh
+nix fmt
+nix flake check
+```
