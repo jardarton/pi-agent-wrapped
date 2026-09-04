@@ -85,7 +85,7 @@ buildNpmPackage {
 
     cp -R node_modules/. $out/lib/node_modules/
     rm -f $out/lib/node_modules/@earendil-works/pi-evals
-    cp -R packages/{agent,ai,client,coding-agent,protocol,server,telemetry,tui} $out/lib/packages/
+    cp -R packages/{agent,ai,chord,client,coding-agent,protocol,server,telemetry,tui} $out/lib/packages/
     cp -R packages/session-backends/sqlite-node $out/lib/packages/session-backends/
 
     ${lib.optionalString (splashPatch != null) ''

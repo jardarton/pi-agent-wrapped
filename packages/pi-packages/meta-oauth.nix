@@ -6,13 +6,13 @@
 
 stdenvNoCC.mkDerivation rec {
   pname = "pi-meta-oauth";
-  version = "0.4.4";
+  version = "0.5.0";
 
   src = fetchFromGitHub {
     owner = "BlockedPath";
     repo = "pi-meta-oauth";
-    rev = "1a4e00778f9d52b6d38f434981fd21cfddfd20a6";
-    hash = "sha256-34xDAyv20BFYu6pQCEglwCJut4hoR7rhYKPKlF0JTd4=";
+    rev = "ce847e0dbbd1b19d11180966144c1549771ecec8";
+    hash = "sha256-VMIDhJFcxKnFqiXa7a3sUGdSTpsHEo4cDmDEB6zwITQ=";
   };
 
   dontBuild = true;

@@ -1,13 +1,33 @@
 diff --git a/packages/coding-agent/src/core/agent-session.ts b/packages/coding-agent/src/core/agent-session.ts
+index ac2bd4b1..f312aa8c 100644
 --- a/packages/coding-agent/src/core/agent-session.ts
 +++ b/packages/coding-agent/src/core/agent-session.ts
-@@ -3165,0 +3166 @@ export class AgentSession {
+@@ -3170,6 +3170,7 @@ export class AgentSession {
+ 				const result = (await this._extensionRunner.emit({
+ 					type: "session_before_tree",
+ 					preparation,
 +					streamFn: this.agent.streamFunction,
+ 					signal: this._branchSummaryAbortController.signal,
+ 				})) as SessionBeforeTreeResult | undefined;
+ 
 diff --git a/packages/coding-agent/src/core/extensions/types.ts b/packages/coding-agent/src/core/extensions/types.ts
+index eaff3a86..01e6bf6c 100644
 --- a/packages/coding-agent/src/core/extensions/types.ts
 +++ b/packages/coding-agent/src/core/extensions/types.ts
-@@ -14,0 +15 @@ import type {
+@@ -12,6 +12,7 @@ import type {
+ 	AgentMessage,
+ 	AgentToolResult,
+ 	AgentToolUpdateCallback,
 +	StreamFn,
-@@ -658,0 +660,2 @@ export interface SessionBeforeTreeEvent {
+ 	ThinkingLevel,
+ 	ToolExecutionMode,
+ } from "@earendil-works/pi-agent-core";
+@@ -656,6 +657,8 @@ export interface TreePreparation {
+ export interface SessionBeforeTreeEvent {
+ 	type: "session_before_tree";
+ 	preparation: TreePreparation;
 +	/** Session request stream, preserving retries, headers, hooks, and provider behavior. */
 +	streamFn: StreamFn;
+ 	signal: AbortSignal;
+ }
+ 
