@@ -9,8 +9,8 @@
 }:
 
 let
-  version = "3.0.25";
-  rev = "69941885c5def4bc97a97698b99d9edb23221529";
+  version = "3.0.29";
+  rev = "8cb6b71fd40efd781c0ce6b38f927a3616c3d08f";
 
   # Build the pidex fork from source. The repository uses Bun, while
   # buildNpmPackage needs an npm lock, so the adjacent lockfile is generated
@@ -19,7 +19,7 @@ let
     owner = "jardarton";
     repo = "pidex";
     inherit rev;
-    hash = "sha256-51bbEpSy/1xdF3lJOvsO6ywnM9F+1mv7BBVdukvksvQ=";
+    hash = "sha256-250LAdQRA8eZnvhQt5fm2OLVkNto7OMwggdRBBHz/vM=";
   };
 
   # Node's `${process.platform}-${process.arch}`, which the extension uses to
@@ -71,7 +71,7 @@ buildNpmPackage {
 
   sourceRoot = "source";
 
-  npmDepsHash = "sha256-ueMxdmgh8GEMKL8Fa9rJppB3Bcan+n7nKbfNEpBpNr0=";
+  npmDepsHash = "sha256-/ClAUYuCPYjZ+Hdtf9EKcXU1ZJfQHBcvqr2l+FG5AC0=";
   npmDepsFetcherVersion = 2;
   npmFlags = [
     "--ignore-scripts"
@@ -101,6 +101,31 @@ buildNpmPackage {
       --replace-fail \
         'executeNotebookControl(runtime, params, {' \
         'executeNotebookControl(runtime, params as NotebookToolParameters, {'
+    substituteInPlace packages/pi-codex-conversion/src/context-management/history-notes.ts \
+      --replace-fail \
+        'import { Type } from "typebox";' \
+        'import { Type, type TSchema } from "typebox";' \
+      --replace-fail \
+        'const HISTORY_PARAMETERS = Type.Object(' \
+        'const HISTORY_PARAMETERS: TSchema = Type.Object(' \
+      --replace-fail \
+        'const NOTES_PARAMETERS = Type.Object(' \
+        'const NOTES_PARAMETERS: TSchema = Type.Object(' \
+      --replace-fail \
+        'historyAction(params.action)' \
+        'historyAction((params as Record<string, unknown>)["action"])' \
+      --replace-fail \
+        'validateHistoryArguments(action, params)' \
+        'validateHistoryArguments(action, params as Record<string, unknown>)' \
+      --replace-fail \
+        'notesAction(params.action)' \
+        'notesAction((params as Record<string, unknown>)["action"])' \
+      --replace-fail \
+        'validateNotesArguments(action, params)' \
+        'validateNotesArguments(action, params as Record<string, unknown>)' \
+      --replace-fail \
+        $'\t\t\t\t\tparams,\n' \
+        $'\t\t\t\t\tparams as Record<string, unknown>,\n'
   '';
 
   # The only install script in the dependency tree builds tree-sitter-bash's
