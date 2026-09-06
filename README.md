@@ -185,7 +185,7 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
 - `pi.appendSystemPrompt`, `pi.overrideSystemPrompt`
 - `pi.splash.enable` and `pi.splash.*` (see below)
 - opt-in integrations under `pi.fff`, `pi.dynamicWorkflows`, `pi.goal`, `pi.review`,
-  `pi.clarify`, `pi.metaOAuth`, `pi.chromeCdp`, `pi.codexConversion`, `pi.herdrIntegration`,
+  `pi.clarify`, `pi.metaOAuth`, `pi.chromeCdp`, `pi.codexConversion`,
   `pi.mattPocockSkills`, `pi.pstackSkills`, `pi.camofoxBrowser`,
   `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
 
@@ -272,12 +272,9 @@ This gives GPT models Codex-shaped tools and prompt handling, and exposes the
 platform and the Code Mode host binary, so nothing is downloaded at runtime.
 The integration is disabled by default.
 
-When `pi.herdrIntegration.enable` is enabled, the wrapper also loads a narrowly
-scoped terminal-capability shim. Herdr forwards Kitty graphics sequences while
-presenting child PTYs as `TERM=xterm-256color`, which makes pi-tui disable inline
-images. In a pane with `HERDR_ENV=1`, the shim enables only pi-tui's Kitty image
-capability and preserves all other detected capabilities. It has no effect
-outside Herdr. `terminal.showImages` must still be enabled for images to render.
+External integrations belong to the consumer configuration. Use `pi.resourcePackages`
+to attach package-provided skills and extensions to selected profiles. The consumer
+owns the package version and any terminal-specific compatibility extensions.
 
 ### Camofox scoped snapshots
 

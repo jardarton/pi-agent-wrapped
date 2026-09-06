@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 {
@@ -65,25 +64,6 @@
         );
         default = null;
         description = "Default allowlisted provider, model, and reasoning triple for matcher jobs.";
-      };
-    };
-
-    herdrIntegration = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Whether to declaratively load Herdr's Pi integration extension.";
-      };
-
-      source = lib.mkOption {
-        type = lib.types.package;
-        default = pkgs.fetchFromGitHub {
-          owner = "ogulcancelik";
-          repo = "herdr";
-          rev = "c0fb777ed7c7950c6a2f397113c1842c2e679306";
-          hash = "sha256-vhG8YWmGkKAps403O15qUc5swKinz7eJxhx/HHH4Ew0=";
-        };
-        description = "Pinned Herdr source containing the Pi integration extension.";
       };
     };
 
