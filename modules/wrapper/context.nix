@@ -45,7 +45,6 @@ let
     "context"
     "explore"
     "gpt-subagent"
-    "herdr-terminal-images"
     "host-statusline"
     "librarian"
     "multi-edit"
@@ -170,12 +169,7 @@ let
     ++ lib.optionals config.pi.nixOptions.enable [
       "${piResources}/share/pi-resources/extensions/nix-options.ts"
     ]
-    ++ resourcePackageResources "extensions"
-    ++ lib.optionals config.pi.herdrIntegration.enable [
-      herdrPiExtension
-      (bundledExtensionPath "herdr-terminal-images")
-    ];
-  herdrPiExtension = "${config.pi.herdrIntegration.source}/src/integration/assets/pi/herdr-agent-state.ts";
+    ++ resourcePackageResources "extensions";
   mattPocockResourcePackage = lib.optional config.pi.mattPocockSkills.enable {
     package = mattPocockSkillsPackage;
     skills = map (

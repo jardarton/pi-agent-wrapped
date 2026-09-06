@@ -278,39 +278,6 @@ result/share/pi-packages/codex-conversion/code-mode/bin/*/codex-code-mode-host -
 Only the build platform's helpers should be present, and every one of them
 should run: they are prebuilt glibc binaries patched by `autoPatchelfHook`.
 
-### Herdr Pi integration
-
-`module.nix` fetches Herdr with a pinned `pkgs.fetchFromGitHub` source for the declarative Pi integration extension:
-
-- repo: <https://github.com/ogulcancelik/herdr>
-- file used: `src/integration/assets/pi/herdr-agent-state.ts`
-- option: `pi.herdrIntegration.source`
-
-Refresh regularly so the bundled integration stays compatible with current Herdr releases.
-
-Update steps:
-
-```bash
-rev=$(git ls-remote https://github.com/ogulcancelik/herdr HEAD | awk '{print $1}')
-nix-prefetch-url --unpack "https://github.com/ogulcancelik/herdr/archive/$rev.tar.gz"
-```
-
-Convert the printed base32 hash to SRI format:
-
-```bash
-nix hash convert --hash-algo sha256 --to sri <base32-hash>
-```
-
-Then update `rev` and `hash` in `module.nix`, run:
-
-```bash
-nix fmt
-nix flake show
-nix build .#p
-```
-
-Optional sanity check: inspect generated settings and confirm `extensions` contains the Herdr store path ending in `src/integration/assets/pi/herdr-agent-state.ts`.
-
 ### Vendored session-reader skill
 
 `skills/session-reader/` is based on <https://github.com/HazAT/pi-config/tree/main/skills/session-reader>, currently from commit `6770b7fbe38823e0932b1315ce6188c91129462a` (the skill's latest upstream change is `ecf52fe6003e37f211cae5c50acba1398886abca`). It is intentionally vendored because wrapped Pi uses `PI_CODING_AGENT_SESSION_DIR` and Pi-relative skill paths rather than `~/.pi/agent/sessions` and `CLAUDE_SKILL_ROOT`.
