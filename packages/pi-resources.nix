@@ -10,7 +10,7 @@ buildNpmPackage {
   version = "0.1.0";
 
   src = ../extensions;
-  npmDepsHash = "sha256-XOfeUiW9Qg3k296YozcRX2Jhc3bO+pHke2yLjhcb9g0=";
+  npmDepsHash = "sha256-ksi6Ik9xl5HDqfuEzAWqoUN06FbSUPxqDxejcOZu8nM=";
   npmDepsFetcherVersion = 2;
   nativeBuildInputs = [ git ];
 

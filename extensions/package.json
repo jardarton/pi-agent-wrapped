@@ -6,7 +6,7 @@
   "dependencies": {
     "@earendil-works/gondolin": "0.12.0",
     "diff": "^9.0.0",
-    "typebox": "1.3.25"
+    "typebox": "1.3.29"
   },
   "scripts": {
     "check": "tsc -p tsconfig.json --noEmit --noCheck && node --experimental-strip-types --test tests/*.test.ts"
@@ -16,7 +16,7 @@
     "@earendil-works/pi-coding-agent": "0.85.1",
     "@earendil-works/pi-server": "0.85.1",
     "@earendil-works/pi-tui": "0.85.1",
-    "@types/node": "26.4.1",
+    "@types/node": "26.5.0",
     "typescript": "7.0.2"
   }
 }

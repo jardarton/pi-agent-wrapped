@@ -6,13 +6,13 @@
 
 buildNpmPackage rec {
   pname = "pi-mcp-adapter";
-  version = "2.31.0";
+  version = "2.32.1";
 
   src = fetchFromGitHub {
     owner = "nicobailon";
     repo = "pi-mcp-adapter";
-    rev = "fad5f4c648dc2ba6ec0576fdef6e64d2c7c0368c";
-    hash = "sha256-xlp7KBULl90N+ZAumCppsTT78zW0q2o6H3uTHXaLNLk=";
+    rev = "8243eba3421e301c88c047444f34ab7d5d57163e";
+    hash = "sha256-Z+Nc7aQJFnZKYAe6yQN0CFwYuekNahAcFRg+dDBpRVU=";
   };
 
   postPatch = ''
@@ -31,7 +31,7 @@ buildNpmPackage rec {
     add_integrity pi-tui 'sha512-udeXFbgEhJ6JiB0uguwNVNkDy2FENfmtQwPcY+/iJ8GWeq18wkal1tKqa5YyeH0IqtX1vG0cGh8zfSYzyzVuLA=='
   '';
 
-  npmDepsHash = "sha256-sZ8vmuoJBa/FQQgGTa+BVEYQC9S5rjzm/4d0ArwMXGY=";
+  npmDepsHash = "sha256-jfS3InXTby7E+tlHu+l9M01oKNaTOII1abHs9bPiuGM=";
   npmDepsFetcherVersion = 2;
 
   dontNpmBuild = true;
