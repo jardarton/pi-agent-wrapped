@@ -9,8 +9,8 @@
 }:
 
 let
-  version = "3.0.29";
-  rev = "8cb6b71fd40efd781c0ce6b38f927a3616c3d08f";
+  version = "3.0.31";
+  rev = "31a6b6be357b615064ade0855c92946cc3fce3a6";
 
   # Build the pidex fork from source. The repository uses Bun, while
   # buildNpmPackage needs an npm lock, so the adjacent lockfile is generated
@@ -19,7 +19,7 @@ let
     owner = "jardarton";
     repo = "pidex";
     inherit rev;
-    hash = "sha256-250LAdQRA8eZnvhQt5fm2OLVkNto7OMwggdRBBHz/vM=";
+    hash = "sha256-/TReJQ7YsrW0iRo5I2aOUhaKa8k07MIdU9qCMhcBsAA=";
   };
 
   # Node's `${process.platform}-${process.arch}`, which the extension uses to
@@ -71,7 +71,7 @@ buildNpmPackage {
 
   sourceRoot = "source";
 
-  npmDepsHash = "sha256-/ClAUYuCPYjZ+Hdtf9EKcXU1ZJfQHBcvqr2l+FG5AC0=";
+  npmDepsHash = "sha256-3LO3opZw3bm5qschni3HTNrj3afVm8fW51vHePJ4a6U=";
   npmDepsFetcherVersion = 2;
   npmFlags = [
     "--ignore-scripts"
@@ -124,6 +124,9 @@ buildNpmPackage {
         'validateNotesArguments(action, params)' \
         'validateNotesArguments(action, params as Record<string, unknown>)' \
       --replace-fail \
+        'finishNoteWrite?.(action, params.path, ctx)' \
+        'finishNoteWrite?.(action, (params as Record<string, unknown>)["path"], ctx)' \
+      --replace-fail \
         $'\t\t\t\t\tparams,\n' \
         $'\t\t\t\t\tparams as Record<string, unknown>,\n'
   '';
@@ -165,12 +168,6 @@ buildNpmPackage {
     mkdir -p "$package_dir"
     cp package.json README.md CHANGELOG.md LICENSE UPSTREAM_SYNC.md changelog.js "$package_dir/"
     cp -R dist src ../../node_modules "$package_dir/"
-
-    ${lib.optionalString stdenv.hostPlatform.isLinux ''
-      find "$package_dir/node_modules/zeromq/build/linux/${
-        if stdenv.hostPlatform.isAarch64 then "arm64" else "x64"
-      }/node" -mindepth 1 -maxdepth 1 -type d -name 'musl-*' -exec rm -rf {} +
-    ''}
 
     host_dir="$package_dir/code-mode/bin/${targetDir}"
     mkdir -p "$host_dir"

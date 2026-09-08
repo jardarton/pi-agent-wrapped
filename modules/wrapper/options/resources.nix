@@ -180,8 +180,8 @@ in
         default = pkgs.fetchFromGitHub {
           owner = "mattpocock";
           repo = "skills";
-          rev = "9c9f36ccd3995266cd675468af71639c8dde1ec5";
-          hash = "sha256-CJNC5fORkc+FGd+FlCXG6rZcVv2MCqCNHCVC0AW623Q=";
+          rev = "3cca18b368ae95cdbdebbff572ccafa662551015";
+          hash = "sha256-dF5i37jHnqfcXD1IRSVzSSm/pfCYSUmOsEhhs5Zx340=";
         };
         description = "Pinned Matt Pocock skills source checkout.";
       };
@@ -245,8 +245,8 @@ in
         default = pkgs.fetchFromGitHub {
           owner = "cursor";
           repo = "plugins";
-          rev = "46125561306434d8a1d7745d540d8932ab0cd2a2";
-          hash = "sha256-rTkT/2dliMzvwDkza2+JNhSIzcTr9fXjvK2zwi/lRl8=";
+          rev = "2b8ae2ee306f823d54879d3da7f8496b73c31d5d";
+          hash = "sha256-Yw8VwNSxuYDyv7b/EiJ/GY6RMcoWiYtWcUP1n5btP+0=";
         };
         description = "Pinned Cursor plugins source checkout containing the pstack skills.";
       };
