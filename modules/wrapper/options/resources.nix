@@ -21,73 +21,74 @@ let
     reviewPackage
     chromeCdpPackage
     ;
+  enabledResourcePackages =
+    lib.optionals config.pi.fff.enable [
+      {
+        package = fffPackage;
+        extensions = [ "${fffPackage}/share/pi-packages/fff/src/index.ts" ];
+      }
+    ]
+    ++ lib.optionals config.pi.dynamicWorkflows.enable [
+      {
+        package = dynamicWorkflowsPackage;
+        extensions = [
+          "${dynamicWorkflowsPackage}/share/pi-packages/dynamic-workflows/extensions/workflow.ts"
+        ];
+      }
+    ]
+    ++ lib.optionals config.pi.goal.enable [
+      {
+        package = codexGoalPackage;
+        extensions = [ "${codexGoalPackage}/share/pi-packages/codex-goal/src/index.ts" ];
+        prompts = [ "${codexGoalPackage}/share/pi-packages/codex-goal/prompts" ];
+      }
+    ]
+    ++ lib.optionals config.pi.mcpAdapter.enable [
+      {
+        package = mcpAdapterPackage;
+        extensions = [ "${mcpAdapterPackage}/share/pi-packages/mcp-adapter/index.ts" ];
+      }
+    ]
+    ++ lib.optionals config.pi.review.enable [
+      {
+        package = reviewPackage;
+        extensions = [ "${reviewPackage}/share/pi-packages/pi-review/review.ts" ];
+      }
+    ]
+    ++ lib.optionals config.pi.clarify.enable [
+      {
+        package = clarifyPackage;
+        extensions = [ "${clarifyPackage}/share/pi-packages/clarify/extensions/clarify.ts" ];
+      }
+    ]
+    ++ lib.optionals config.pi.metaOAuth.enable [
+      {
+        package = metaOAuthPackage;
+        extensions = [ "${metaOAuthPackage}/share/pi-packages/meta-oauth/meta.ts" ];
+      }
+    ]
+    ++ lib.optionals config.pi.chromeCdp.enable [
+      {
+        package = chromeCdpPackage;
+        skills = [ "${chromeCdpPackage}/share/pi-packages/chrome-cdp/skills/chrome-cdp" ];
+      }
+    ]
+    ++ lib.optionals config.pi.codexConversion.enable [
+      {
+        package = codexConversionPackage;
+        extensions = [
+          "${codexConversionPackage}/share/pi-packages/codex-conversion/dist/index.js"
+        ];
+      }
+    ]
+    ++ mattPocockResourcePackage
+    ++ pstackResourcePackage;
 in
 {
   options.pi = {
     resourcePackages = lib.mkOption {
       type = lib.types.listOf piResourcePackageType;
-      default =
-        lib.optionals config.pi.fff.enable [
-          {
-            package = fffPackage;
-            extensions = [ "${fffPackage}/share/pi-packages/fff/src/index.ts" ];
-          }
-        ]
-        ++ lib.optionals config.pi.dynamicWorkflows.enable [
-          {
-            package = dynamicWorkflowsPackage;
-            extensions = [
-              "${dynamicWorkflowsPackage}/share/pi-packages/dynamic-workflows/extensions/workflow.ts"
-            ];
-          }
-        ]
-        ++ lib.optionals config.pi.goal.enable [
-          {
-            package = codexGoalPackage;
-            extensions = [ "${codexGoalPackage}/share/pi-packages/codex-goal/src/index.ts" ];
-            prompts = [ "${codexGoalPackage}/share/pi-packages/codex-goal/prompts" ];
-          }
-        ]
-        ++ lib.optionals config.pi.mcpAdapter.enable [
-          {
-            package = mcpAdapterPackage;
-            extensions = [ "${mcpAdapterPackage}/share/pi-packages/mcp-adapter/index.ts" ];
-          }
-        ]
-        ++ lib.optionals config.pi.review.enable [
-          {
-            package = reviewPackage;
-            extensions = [ "${reviewPackage}/share/pi-packages/pi-review/review.ts" ];
-          }
-        ]
-        ++ lib.optionals config.pi.clarify.enable [
-          {
-            package = clarifyPackage;
-            extensions = [ "${clarifyPackage}/share/pi-packages/clarify/extensions/clarify.ts" ];
-          }
-        ]
-        ++ lib.optionals config.pi.metaOAuth.enable [
-          {
-            package = metaOAuthPackage;
-            extensions = [ "${metaOAuthPackage}/share/pi-packages/meta-oauth/meta.ts" ];
-          }
-        ]
-        ++ lib.optionals config.pi.chromeCdp.enable [
-          {
-            package = chromeCdpPackage;
-            skills = [ "${chromeCdpPackage}/share/pi-packages/chrome-cdp/skills/chrome-cdp" ];
-          }
-        ]
-        ++ lib.optionals config.pi.codexConversion.enable [
-          {
-            package = codexConversionPackage;
-            extensions = [
-              "${codexConversionPackage}/share/pi-packages/codex-conversion/dist/index.js"
-            ];
-          }
-        ]
-        ++ mattPocockResourcePackage
-        ++ pstackResourcePackage;
+      default = [ ];
       description = "Nix-built Pi packages exposed as generated settings resources.";
     };
 
@@ -274,4 +275,6 @@ in
     };
 
   };
+
+  config.pi.resourcePackages = lib.mkBefore enabledResourcePackages;
 }
