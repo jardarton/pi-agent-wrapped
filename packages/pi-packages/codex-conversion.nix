@@ -9,8 +9,8 @@
 }:
 
 let
-  version = "3.0.31";
-  rev = "31a6b6be357b615064ade0855c92946cc3fce3a6";
+  version = "3.0.34";
+  rev = "0da4b35ead11a121a8606e6683055e6dbcc40096";
 
   # Build the pidex fork from source. The repository uses Bun, while
   # buildNpmPackage needs an npm lock, so the adjacent lockfile is generated
@@ -19,7 +19,7 @@ let
     owner = "jardarton";
     repo = "pidex";
     inherit rev;
-    hash = "sha256-/TReJQ7YsrW0iRo5I2aOUhaKa8k07MIdU9qCMhcBsAA=";
+    hash = "sha256-kIIjHY6ZQjT21RqtdsALs1+IbaMn92hv8gP/kpKLgZk=";
   };
 
   # Node's `${process.platform}-${process.arch}`, which the extension uses to
@@ -71,7 +71,7 @@ buildNpmPackage {
 
   sourceRoot = "source";
 
-  npmDepsHash = "sha256-3LO3opZw3bm5qschni3HTNrj3afVm8fW51vHePJ4a6U=";
+  npmDepsHash = "sha256-t4ChYI67GftO60puUHAMAD0FK0QV3p8mhT0umGouc00=";
   npmDepsFetcherVersion = 2;
   npmFlags = [
     "--ignore-scripts"
@@ -91,49 +91,10 @@ buildNpmPackage {
   postPatch = ''
     cp packages/pi-codex-conversion/package.json package.json
     cp ${./codex-conversion/package-lock.json} package-lock.json
-    substituteInPlace packages/pi-codex-conversion/src/tools/code-mode/notebook-tool.ts \
-      --replace-fail \
-        'import { Type } from "typebox";' \
-        'import { Type, type TSchema } from "typebox";' \
-      --replace-fail \
-        'export const NOTEBOOK_PARAMETERS = Type.Union([' \
-        'export const NOTEBOOK_PARAMETERS: TSchema = Type.Union([' \
-      --replace-fail \
-        'executeNotebookControl(runtime, params, {' \
-        'executeNotebookControl(runtime, params as NotebookToolParameters, {'
-    substituteInPlace packages/pi-codex-conversion/src/context-management/history-notes.ts \
-      --replace-fail \
-        'import { Type } from "typebox";' \
-        'import { Type, type TSchema } from "typebox";' \
-      --replace-fail \
-        'const HISTORY_PARAMETERS = Type.Object(' \
-        'const HISTORY_PARAMETERS: TSchema = Type.Object(' \
-      --replace-fail \
-        'const NOTES_PARAMETERS = Type.Object(' \
-        'const NOTES_PARAMETERS: TSchema = Type.Object(' \
-      --replace-fail \
-        'historyAction(params.action)' \
-        'historyAction((params as Record<string, unknown>)["action"])' \
-      --replace-fail \
-        'validateHistoryArguments(action, params)' \
-        'validateHistoryArguments(action, params as Record<string, unknown>)' \
-      --replace-fail \
-        'notesAction(params.action)' \
-        'notesAction((params as Record<string, unknown>)["action"])' \
-      --replace-fail \
-        'validateNotesArguments(action, params)' \
-        'validateNotesArguments(action, params as Record<string, unknown>)' \
-      --replace-fail \
-        'finishNoteWrite?.(action, params.path, ctx)' \
-        'finishNoteWrite?.(action, (params as Record<string, unknown>)["path"], ctx)' \
-      --replace-fail \
-        $'\t\t\t\t\tparams,\n' \
-        $'\t\t\t\t\tparams as Record<string, unknown>,\n'
   '';
 
-  # The only install script in the dependency tree builds tree-sitter-bash's
-  # native binding, which this extension never loads: it resolves
-  # `tree-sitter-bash/tree-sitter-bash.wasm` and parses through `web-tree-sitter`.
+  # Runtime assets are vendored upstream; dependency lifecycle scripts are not
+  # needed for this build.
   npmRebuildFlags = [ "--ignore-scripts" ];
 
   buildPhase = ''
@@ -167,7 +128,7 @@ buildNpmPackage {
     package_dir="$out/share/pi-packages/codex-conversion"
     mkdir -p "$package_dir"
     cp package.json README.md CHANGELOG.md LICENSE UPSTREAM_SYNC.md changelog.js "$package_dir/"
-    cp -R dist src ../../node_modules "$package_dir/"
+    cp -R dist src vendor ../../node_modules "$package_dir/"
 
     host_dir="$package_dir/code-mode/bin/${targetDir}"
     mkdir -p "$host_dir"
