@@ -77,8 +77,8 @@ test("registers one GPT subagent tool and model slash commands", () => {
 	assert.deepEqual([...tools.keys()], ["agent"]);
 	assert.deepEqual([...commands.keys()], ["luna", "sol", "astra"]);
 	assert.deepEqual(GPT_SUBAGENT_MODELS, {
-		luna: "gpt-5.6-luna",
-		sol: "gpt-5.6-sol",
+		luna: "gpt-6-luna",
+		sol: "gpt-6-sol",
 		astra: "gpt-6-astra",
 	});
 });
@@ -239,7 +239,7 @@ test("tool launches the exact active wrapper in a background Herdr pane", async 
 					"pane",
 					"run",
 					"w1:p9",
-					"'/nix/store/example-pi/bin/p' '--model' 'openai-codex/gpt-5.6-luna' '--' 'Review Bob'\"'\"'s change'",
+					"'/nix/store/example-pi/bin/p' '--model' 'openai-codex/gpt-6-luna' '--' 'Review Bob'\"'\"'s change'",
 				],
 			});
 			assert.deepEqual(calls[2], {
@@ -247,7 +247,7 @@ test("tool launches the exact active wrapper in a background Herdr pane", async 
 				args: ["agent", "get", "w1:p9"],
 			});
 			assert.equal(result.details.pane, "w1:p9");
-			assert.equal(result.details.modelRef, "openai-codex/gpt-5.6-luna");
+			assert.equal(result.details.modelRef, "openai-codex/gpt-6-luna");
 		},
 	);
 });
@@ -265,7 +265,7 @@ test("option-like tasks are passed after an option terminator", async () => {
 
 			assert.equal(
 				calls[1].args[3],
-				"'/nix/store/example-pi/bin/p' '--model' 'openai-codex/gpt-5.6-luna' '--' '--help'",
+				"'/nix/store/example-pi/bin/p' '--model' 'openai-codex/gpt-6-luna' '--' '--help'",
 			);
 		},
 	);
@@ -284,7 +284,7 @@ test("slash command launches its model and permits an empty task", async () => {
 
 			assert.equal(
 				calls[1].args[3],
-				"'/nix/store/example-pi/bin/p' '--model' 'openai-codex/gpt-5.6-sol'",
+				"'/nix/store/example-pi/bin/p' '--model' 'openai-codex/gpt-6-sol'",
 			);
 			assert.deepEqual(notifications, [{ message: "Launched sol in Herdr pane w1:p9.", level: "info" }]);
 		},

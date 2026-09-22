@@ -10,7 +10,7 @@ type ModelConfig = ParsedModelRef & {
 	reserveTokens?: number;
 };
 
-const DEFAULT_CHEAP_MODEL = "openai-codex/gpt-5.6-terra";
+const DEFAULT_CHEAP_MODEL = "openai-codex/gpt-6-luna";
 const DEFAULT_CHEAP_THINKING_LEVEL = "low" as const;
 const DEFAULT_CHEAP_FALLBACK_MODELS = [
 	"github-copilot/gpt-5.4-mini",

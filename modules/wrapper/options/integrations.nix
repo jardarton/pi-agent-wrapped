@@ -153,7 +153,7 @@
       primary = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
         default = null;
-        example = "openai-codex/gpt-5.6-luna";
+        example = "openai-codex/gpt-6-luna";
         description = "Primary cheap model exported as `PI_CHEAP_MODEL` for shared explore/tree/compaction model selection.";
       };
 

@@ -17,7 +17,7 @@ export interface ResolvedConfig {
  usage: { enabled: boolean; refreshIntervalMs: number; showOnlyOnSubscriptionModels: boolean; showResetTimes: boolean };
  image: { enabled: boolean; defaultModel: string; defaultSave: ImageSaveMode; outputFormat: ImageFormat; timeoutMs: number; customDirectory?: string };
 }
-export const DEFAULT_SUPPORTED_MODELS = ["openai-codex/gpt-5.6-terra", "openai-codex/gpt-5.6-luna", "openai-codex/gpt-5.6-sol"];
+export const DEFAULT_SUPPORTED_MODELS = ["openai-codex/gpt-6-luna", "openai-codex/gpt-6-sol", "openai-codex/gpt-6-astra"];
 export const DEFAULT_CONFIG = {
  persistState: true, desiredActive: false, active: false, supportedModels: DEFAULT_SUPPORTED_MODELS,
  usage: { enabled: true, refreshIntervalMs: 60_000, showOnlyOnSubscriptionModels: true, showResetTimes: true },
