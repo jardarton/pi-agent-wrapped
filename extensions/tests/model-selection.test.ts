@@ -26,7 +26,7 @@ async function withoutCheapModelEnv<T>(fn: () => Promise<T>): Promise<T> {
 test("default cheap model is Terra at low reasoning", async () => {
 	await withoutCheapModelEnv(async () => {
 		const args = cheapModelArgs();
-		assert.equal(args[0], "openai-codex/gpt-5.6-terra:low");
+		assert.equal(args[0], "openai-codex/gpt-6-luna:low");
 		assert.ok(args.every((arg) => arg.endsWith(":low")));
 
 		const ctx = {
@@ -39,7 +39,7 @@ test("default cheap model is Terra at low reasoning", async () => {
 		assert.ok(!("error" in selected));
 		assert.deepEqual(selected.config, {
 			provider: "openai-codex",
-			id: "gpt-5.6-terra",
+			id: "gpt-6-luna",
 			thinkingLevel: "low",
 			reserveTokens: undefined,
 		});

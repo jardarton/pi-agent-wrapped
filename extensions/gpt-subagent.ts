@@ -6,8 +6,8 @@ import { setTimeout as delay } from "node:timers/promises";
 import { getPiInvocationParts } from "./lib/launcher.ts";
 
 export const GPT_SUBAGENT_MODELS = {
-	luna: "gpt-5.6-luna",
-	sol: "gpt-5.6-sol",
+	luna: "gpt-6-luna",
+	sol: "gpt-6-sol",
 	astra: "gpt-6-astra",
 } as const;
 
@@ -19,7 +19,7 @@ const COMMAND_TIMEOUT_MS = 5_000;
 
 const GptSubagentParams = Type.Object({
 	model: StringEnum(MODEL_NAMES, {
-		description: "Choose luna (GPT-5.6, lightweight tasks), sol (GPT-5.6, demanding coding/review), or astra (GPT-6, highest-tier and higher-cost option for the hardest tasks).",
+		description: "Choose luna (GPT-6, lightweight tasks), sol (GPT-6, demanding coding/review), or astra (GPT-6, highest-tier and higher-cost option for the hardest tasks).",
 	}),
 	task: Type.String({
 		minLength: 1,

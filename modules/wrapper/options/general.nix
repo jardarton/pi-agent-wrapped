@@ -30,7 +30,7 @@ in
     defaultModel = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
-      example = "openai-codex/gpt-5.6-terra";
+      example = "openai-codex/gpt-6-luna";
       description = "Default Pi model. Use a fully-qualified provider/model id; generated settings split it into `defaultProvider` and `defaultModel` for Pi. When null, no default model is written and Pi's own selection applies.";
     };
 
@@ -38,7 +38,7 @@ in
       type = lib.types.listOf lib.types.str;
       default = [ ];
       example = [
-        "openai-codex/gpt-5.6-terra"
+        "openai-codex/gpt-6-luna"
         "anthropic/claude-haiku-4-5"
       ];
       description = "Model allowlist written to generated settings.json as `enabledModels`. An empty list omits the key, leaving all models available.";
