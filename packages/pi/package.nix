@@ -38,8 +38,10 @@ buildNpmPackage {
     patch -p1 < ${./tree-summary-stream-fn.patch}
     cp ${./generated/models.generated.ts} packages/ai/src/models.generated.ts
     cp ${./generated/image-models.generated.ts} packages/ai/src/image-models.generated.ts
+    rm -f packages/ai/src/providers/*.models.ts
     cp ${./generated/providers}/*.models.ts packages/ai/src/providers/
-    mkdir -p packages/ai/src/providers/data
+    rm -rf packages/ai/src/providers/data
+    mkdir packages/ai/src/providers/data
     cp -R ${./generated/provider-data}/. packages/ai/src/providers/data/
   '';
 
@@ -54,6 +56,7 @@ buildNpmPackage {
     for (const name of [
       "tui",
       "ai",
+      "durable",
       "agent",
       "session-backends/sqlite-node",
       "protocol",
@@ -85,7 +88,7 @@ buildNpmPackage {
 
     cp -R node_modules/. $out/lib/node_modules/
     rm -f $out/lib/node_modules/@earendil-works/pi-evals
-    cp -R packages/{agent,ai,chord,client,coding-agent,protocol,server,telemetry,tui} $out/lib/packages/
+    cp -R packages/{agent,ai,chord,client,coding-agent,durable,protocol,server,telemetry,tui} $out/lib/packages/
     cp -R packages/session-backends/sqlite-node $out/lib/packages/session-backends/
 
     ${lib.optionalString (splashPatch != null) ''
