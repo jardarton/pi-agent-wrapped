@@ -12,10 +12,10 @@
     "check": "tsc -p tsconfig.json --noEmit --noCheck && node --experimental-strip-types --test tests/*.test.ts"
   },
   "devDependencies": {
-    "@earendil-works/pi-ai": "0.87.0",
-    "@earendil-works/pi-coding-agent": "0.87.0",
-    "@earendil-works/pi-server": "0.87.0",
-    "@earendil-works/pi-tui": "0.87.0",
+    "@earendil-works/pi-ai": "0.87.1",
+    "@earendil-works/pi-coding-agent": "0.87.1",
+    "@earendil-works/pi-server": "0.87.1",
+    "@earendil-works/pi-tui": "0.87.1",
     "@types/node": "26.5.0",
     "typescript": "7.0.2"
   }
