@@ -10,7 +10,7 @@
 
 let
   version = "3.0.37";
-  rev = "b3e58760c3fa70c66ee7f13d508135ec83be5527";
+  rev = "4ea9e8119dff2b0b01ffabb4d2bc4c087e059c1c";
 
   # Build the pidex fork from source. The repository uses Bun, while
   # buildNpmPackage needs an npm lock, so the adjacent lockfile is generated
@@ -19,7 +19,7 @@ let
     owner = "jardarton";
     repo = "pidex";
     inherit rev;
-    hash = "sha256-5cMa+A8ybOqElAYuwVim7KCG0Shmg+mpzYaTR0bC7hs=";
+    hash = "sha256-CeDHTT/Urkybhsn1lX26oRG7l+H5RB/PS/H+VcuG4a8=";
   };
 
   # Node's `${process.platform}-${process.arch}`, which the extension uses to
