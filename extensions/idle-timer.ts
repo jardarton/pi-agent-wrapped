@@ -42,6 +42,7 @@ export default function idleTimer(pi: ExtensionAPI) {
 				if (code !== 0) ctx.ui.notify(`Idle hook exited with code ${code}`, "error");
 			});
 		}
+		if (minutes < 1) return;
 		if (minutes === shownMinute) return;
 		shownMinute = minutes;
 		ctx.ui.setWidget(widgetKey, (_tui, theme) => ({

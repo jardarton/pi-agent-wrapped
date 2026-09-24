@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import idleTimer from "../idle-timer.ts";
 
-test("idle timer appears after settle, advances, and stops during work and shutdown", () => {
+test("idle timer stays hidden until one minute after settle, then stops during work and shutdown", () => {
 	const handlers = new Map<string, (event: unknown, ctx: any) => void>();
 	const widgets: Array<unknown> = [];
 	const ctx = {
@@ -28,7 +28,10 @@ test("idle timer appears after settle, advances, and stops during work and shutd
 		assert.equal(widgets.at(-1), undefined);
 		emit("agent_settled");
 		const render = () => (widgets.at(-1) as (tui: unknown, theme: any) => any)(null, { fg: (_color: string, text: string) => text }).render(80)[0];
-		assert.equal(render(), "Idle 0m");
+		assert.equal(widgets.at(-1), undefined);
+		Date.now = () => 60_999;
+		tick?.();
+		assert.equal(widgets.at(-1), undefined);
 		Date.now = () => 61_000;
 		tick?.();
 		assert.equal(render(), "Idle 1m");
