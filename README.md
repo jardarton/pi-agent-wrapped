@@ -209,6 +209,27 @@ can be controlled independently with `pi.cheapModels.treeSummary.enable` and
 `pi.cheapModels.compaction.enable`. Both default to `true` for compatibility;
 setting one to `false` leaves that operation to Pi's built-in implementation.
 
+### Idle timer and optional command
+
+Add `"idle-timer"` to `pi.bundledExtensions` to show a dim elapsed-minutes
+counter near the editor after the assistant finishes and waits for input. It
+resets when the agent starts working again. The extension is off by default.
+
+To run a command after a chosen number of idle minutes, set both environment
+variables **before launching Pi** (for example in your profile's environment):
+
+```sh
+export PI_IDLE_HOOK_MINUTES=5
+export PI_IDLE_HOOK_COMMAND='notify-send "Pi is waiting for you"'
+```
+
+The threshold must be a positive whole number. The command runs through the
+shell in Pi's working directory once per idle period, with its output discarded;
+nonzero exits are reported in the TUI. If either variable is missing or the
+threshold is invalid, no command runs. The timer and hook only operate in
+interactive TUI mode. Commands already started are not canceled when work
+resumes; use only commands you trust.
+
 Enable Earendil's packaged code-review workflow with:
 
 ```nix

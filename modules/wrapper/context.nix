@@ -46,6 +46,7 @@ let
     "explore"
     "gpt-subagent"
     "host-statusline"
+    "idle-timer"
     "librarian"
     "multi-edit"
     "split-fork"
