@@ -6,32 +6,16 @@
 
 buildNpmPackage rec {
   pname = "pi-package-codex-goal";
-  version = "0.3.0";
+  version = "0.4.1";
 
   src = fetchFromGitHub {
     owner = "fitchmultz";
     repo = "pi-codex-goal";
-    rev = "825c47f5e6b68f57d60d9029b6e7366df681c4ce";
-    hash = "sha256-snRkjxXkSfCrbjmNO1hr2RAQkv6gVUfJJgvmf9aPUAU=";
+    rev = "02b0c751d41edb41bd72c9d5e903de6853ab0356";
+    hash = "sha256-9jkEFwvGJeVqQAUmpmTCPxUZ9dv1WXwDId+ZJmnHnek=";
   };
 
-  postPatch = ''
-    add_integrity() {
-      resolved="https://registry.npmjs.org/@earendil-works/$1/-/$1-0.84.0.tgz"
-      substituteInPlace package-lock.json \
-        --replace-fail \
-          "\"version\": \"0.84.0\","$'\n      '"\"resolved\": \"$resolved\","$'\n      '"\"dev\": true," \
-          "\"version\": \"0.84.0\","$'\n      '"\"resolved\": \"$resolved\","$'\n      '"\"integrity\": \"$2\","$'\n      '"\"dev\": true,"
-    }
-    add_integrity pi-agent-core 'sha512-L1lw0lwR5LXCzGEeHD9XNEruU2bg0H8clOA8ySdGMHvxutp8GC+yZL6MZp4tqQRnLKP3gHmY7TrWzQ3YnFdJYQ=='
-    add_integrity pi-ai 'sha512-N9RDk8q0eglGiy+NqTZ3Ev2j+6oFNXSAJa8b0CYhvWB9HGiKZjsoCESXkUvMDLybrn0wXp75sdsoBzEtHxk9kA=='
-    add_integrity pi-client 'sha512-fHXgw1FdLDh+uw42SvTkJRBfgc3nsrslghvbRFEAxdjfcOxJt7hPsTj4HHNK96wMy1f+zvQYL8Y2znvFoZ8JDA=='
-    add_integrity pi-protocol 'sha512-Fc28cCYGg5+aRnMzbAD7QAi6Xl//kbETyFroLHCs3Zf4oaXH9L2gzBqVLVAwrKIKeS0uffUrmihocGTECfKW6Q=='
-    add_integrity pi-telemetry 'sha512-g6hLxEfAUk3zJlDmFWhWHJNcYXYiNGeWuJC9YkcHpkdkj0gxD4uaMNNNU3QsAEJXW9Qcxnl21+U8GfhVsc8C5g=='
-    add_integrity pi-tui 'sha512-nbs0FeZJ5rWDD6VpKfXXmYbEHnHqb40V9glE2l9f8ftoWpsP8nw0WcXK8jOjfRsDPnT9dJHy3dItOHdn/AFGjA=='
-  '';
-
-  npmDepsHash = "sha256-xyIgSE/hTYpNNNYwPiS+/5l1oVgetLjmwYYnpLVcMfk=";
+  npmDepsHash = "sha256-yjmi5lqImtdcslqzE3+BgQdAnpSwWwNOqWNuqlb3XM4=";
   npmDepsFetcherVersion = 2;
 
   buildPhase = ''
@@ -47,7 +31,7 @@ buildNpmPackage rec {
     package_dir="$out/share/pi-packages/codex-goal"
     mkdir -p "$package_dir"
     cp package.json README.md CHANGELOG.md LICENSE "$package_dir/"
-    cp -R src prompts "$package_dir/"
+    cp -R extensions src prompts "$package_dir/"
 
     runHook postInstall
   '';
