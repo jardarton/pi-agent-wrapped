@@ -29,16 +29,17 @@ buildNpmPackage rec {
   src = fetchFromGitHub {
     owner = "dmtrKovalenko";
     repo = "fff";
-    rev = "d84c0a10cd5ea23285cb5575fa90179f51710f99";
-    hash = "sha256-xODvvcFtALKmWkgJjr2O6wc+TZCv9Eh8CVpJeF+NNqg=";
+    rev = "95fd777c2529fc7b4d7572dabff64cc07268f2c5";
+    hash = "sha256-GSjvvdLkuezFUrHqiSeePa64VRb3tabOKZNqEE5XSAw=";
   };
 
-  npmDepsHash = "sha256-d6LEpW/hyYySLDMFBQufRb3M8wg2i9DX0gu4qtQjq08=";
+  npmDepsHash = "sha256-losBFW25iAkYaYkmjcob5ACUudyHSQk19cJyv+zqUKY=";
   npmDepsFetcherVersion = 2;
+  npmFlags = [ "--legacy-peer-deps" ];
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit src;
-    hash = "sha256-mt5T9Cs174pc1CtrPZE6hwYZ3eSaGhCRL94trcoZn4Q=";
+    hash = "sha256-VKI7MnqCGis78qmYuBkViT96ZhG4Wy9vARdnmGV048A=";
   };
 
   postPatch = ''
@@ -47,6 +48,7 @@ buildNpmPackage rec {
         --replace-fail \
           '  "private": true,' \
           '  "private": true,
+    "dependencies": { "@sinclair/typebox": "0.34.52" },
     "workspaces": ["packages/fff-bun", "packages/fff-node", "packages/pi-fff"],'
 
       # Bun bakes its build-time __dirname into fff-node's ESM bundle, making
@@ -79,7 +81,7 @@ buildNpmPackage rec {
     cargo build --release --package fff-c
     mkdir -p packages/fff-node/bin
     cp target/release/libfff_c.* packages/fff-node/bin/
-    npm prune --omit=dev --no-save --workspace packages/pi-fff
+    npm prune --omit=dev --no-save --legacy-peer-deps --workspace packages/pi-fff
     runHook postBuild
   '';
 
