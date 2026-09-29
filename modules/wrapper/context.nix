@@ -32,7 +32,6 @@ let
   fffPackage = piPackages.pi-fff;
   dynamicWorkflowsPackage = piPackages.pi-dynamic-workflows;
   codexGoalPackage = piPackages.pi-codex-goal;
-  mcpAdapterPackage = piPackages.pi-mcp-adapter;
   reviewPackage = piPackages.pi-review;
   clarifyPackage = piPackages.pi-clarify;
   metaOAuthPackage = piPackages.pi-meta-oauth;
@@ -187,7 +186,6 @@ in
     localSkillsDir
     mattPocockResourcePackage
     mattPocockSkillsPackage
-    mcpAdapterPackage
     metaOAuthPackage
     piPackages
     piResourcePackageType

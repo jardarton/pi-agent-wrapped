@@ -14,7 +14,6 @@ let
     dynamicWorkflowsPackage
     fffPackage
     mattPocockResourcePackage
-    mcpAdapterPackage
     metaOAuthPackage
     piResourcePackageType
     pstackResourcePackage
@@ -41,12 +40,6 @@ let
         package = codexGoalPackage;
         extensions = [ "${codexGoalPackage}/share/pi-packages/codex-goal/src/index.ts" ];
         prompts = [ "${codexGoalPackage}/share/pi-packages/codex-goal/prompts" ];
-      }
-    ]
-    ++ lib.optionals config.pi.mcpAdapter.enable [
-      {
-        package = mcpAdapterPackage;
-        extensions = [ "${mcpAdapterPackage}/share/pi-packages/mcp-adapter/index.ts" ];
       }
     ]
     ++ lib.optionals config.pi.review.enable [
@@ -127,12 +120,6 @@ in
       description = "Whether to expose the packaged dynamic workflow extension.";
     };
 
-    mcpAdapter.enable = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Whether to expose the packaged MCP adapter extension.";
-    };
-
     goal.enable = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -181,8 +168,8 @@ in
         default = pkgs.fetchFromGitHub {
           owner = "mattpocock";
           repo = "skills";
-          rev = "3cca18b368ae95cdbdebbff572ccafa662551015";
-          hash = "sha256-dF5i37jHnqfcXD1IRSVzSSm/pfCYSUmOsEhhs5Zx340=";
+          rev = "d81f3a183412e71a5b1e84ca21bc1a35eea03a60";
+          hash = "sha256-zQ/wVrcHjIC+UjP4nDw3HARMqZd6LIDFmHKlp8AADYI=";
         };
         description = "Pinned Matt Pocock skills source checkout.";
       };
@@ -246,8 +233,8 @@ in
         default = pkgs.fetchFromGitHub {
           owner = "cursor";
           repo = "plugins";
-          rev = "2b8ae2ee306f823d54879d3da7f8496b73c31d5d";
-          hash = "sha256-Yw8VwNSxuYDyv7b/EiJ/GY6RMcoWiYtWcUP1n5btP+0=";
+          rev = "adf3218ca2f5b9971eedc07a76bef22df7701539";
+          hash = "sha256-mQ6+lYLBYkmdOOsXXGR0wxPcHj35dLdb5sMaR/CvQ58=";
         };
         description = "Pinned Cursor plugins source checkout containing the pstack skills.";
       };

@@ -23,7 +23,6 @@ in
   pi-fff = callPackage ./pi-packages/fff.nix { };
   pi-dynamic-workflows = callPackage ./pi-packages/dynamic-workflows.nix { };
   pi-codex-goal = callPackage ./pi-packages/codex-goal.nix { };
-  pi-mcp-adapter = callPackage ./pi-packages/mcp-adapter.nix { };
   pi-review = callPackage ./pi-packages/review.nix { };
   pi-clarify = callPackage ./pi-packages/clarify.nix { };
   pi-meta-oauth = callPackage ./pi-packages/meta-oauth.nix { };

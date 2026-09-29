@@ -11,8 +11,8 @@ buildNpmPackage rec {
   src = fetchFromGitHub {
     owner = "fitchmultz";
     repo = "pi-codex-goal";
-    rev = "02b0c751d41edb41bd72c9d5e903de6853ab0356";
-    hash = "sha256-9jkEFwvGJeVqQAUmpmTCPxUZ9dv1WXwDId+ZJmnHnek=";
+    rev = "d3cf163992606dbe4e1689b93890053a6ff5988b";
+    hash = "sha256-iB5PTicSL4UUf3YUHr9wL7UaPwK1vhH3mG1uC8wupck=";
   };
 
   npmDepsHash = "sha256-yjmi5lqImtdcslqzE3+BgQdAnpSwWwNOqWNuqlb3XM4=";

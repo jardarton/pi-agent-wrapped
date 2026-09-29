@@ -29,8 +29,8 @@ buildNpmPackage rec {
   src = fetchFromGitHub {
     owner = "dmtrKovalenko";
     repo = "fff";
-    rev = "95fd777c2529fc7b4d7572dabff64cc07268f2c5";
-    hash = "sha256-GSjvvdLkuezFUrHqiSeePa64VRb3tabOKZNqEE5XSAw=";
+    rev = "89c19270ea2dfc20829a7429f72022571558093e";
+    hash = "sha256-dR/sAV/ELTdkn2li4TE5w81jKe+Sj/lk4D4URVbsy5Y=";
   };
 
   npmDepsHash = "sha256-losBFW25iAkYaYkmjcob5ACUudyHSQk19cJyv+zqUKY=";
