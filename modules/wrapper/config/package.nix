@@ -11,12 +11,11 @@ let
     agentTools
     chromeCdpPackage
     piPackages
-    splashArgs
     ;
 in
 {
   config = {
-    package = lib.mkDefault (piPackages.pi.override { splashPatch = splashArgs; });
+    package = lib.mkDefault piPackages.pi;
     binName = lib.mkDefault "p";
 
     meta = {

@@ -141,52 +141,5 @@ in
       default = null;
       description = "When set, replaces `pi.appendSystemPrompt` in profile-local `APPEND_SYSTEM.md` under `PI_CODING_AGENT_DIR`.";
     };
-
-    splash = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to replace Pi's launch splash with the `pi.splash.*` text below.
-
-          Off by default for two reasons. It rewrites Pi's built JavaScript by
-          matching literal upstream source strings, so an upstream edit to any of
-          them turns into a hard build failure; leaving it off keeps that risk
-          opt-in. It also has to be applied inside the Pi derivation, so enabling
-          it builds a second Pi from source alongside the plain `.#pi` package.
-        '';
-      };
-
-      logoText = lib.mkOption {
-        type = lib.types.str;
-        default = ''
-          ██████╗ ██╗
-          ██╔══██╗██║
-          ██████╔╝██║
-          ██╔═══╝ ██║
-          ██║     ██║
-          ╚═╝     ╚═╝
-        '';
-        description = "Logo text used in Pi's normal launch splash header.";
-      };
-
-      versionText = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = " v{version}";
-        description = "Version suffix used after `pi.splash.logoText`. Set to null to hide it. `{version}` is replaced with Pi's runtime version.";
-      };
-
-      compactHelpText = lib.mkOption {
-        type = lib.types.str;
-        default = "Press {expandKey} to show full startup help and loaded resources.";
-        description = "Compact normal launch splash help text. `{expandKey}` is replaced with the configured expand-tools key.";
-      };
-
-      helpText = lib.mkOption {
-        type = lib.types.str;
-        default = "Pi can explain its own features and look up its docs. Ask it how to use or extend Pi.";
-        description = "Normal launch splash help text shown below the startup key hints.";
-      };
-    };
   };
 }

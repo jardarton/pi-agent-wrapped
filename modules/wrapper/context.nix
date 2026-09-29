@@ -61,20 +61,6 @@ let
     ) bundledExtensionNames
   );
   gondolinExtensionPath = bundledExtensionPath "gondolin";
-  # Patching the splash rewrites Pi's own JavaScript, so it has to be done in the
-  # package derivation rather than the wrapper output; see packages/pi/package.nix.
-  # `null` leaves Pi's upstream splash alone and keeps the package identical to the
-  # plain `.#pi` build.
-  splashArgs =
-    if config.pi.splash.enable then
-      {
-        logoText = builtins.toJSON config.pi.splash.logoText;
-        versionText = builtins.toJSON config.pi.splash.versionText;
-        compactHelpText = builtins.toJSON config.pi.splash.compactHelpText;
-        helpText = builtins.toJSON config.pi.splash.helpText;
-      }
-    else
-      null;
   mattPocockSkillsPackage = pkgs.runCommand "pi-package-mattpocock-skills" { } ''
     set -euo pipefail
 
@@ -211,6 +197,5 @@ in
     resourceDirs
     resourcePackageResources
     reviewPackage
-    splashArgs
     ;
 }
