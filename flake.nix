@@ -147,7 +147,6 @@
               self.packages.${system}.pi-fff
               self.packages.${system}.pi-dynamic-workflows
               self.packages.${system}.pi-codex-goal
-              self.packages.${system}.pi-mcp-adapter
               self.packages.${system}.pi-review
               self.packages.${system}.pi-clarify
               self.packages.${system}.pi-meta-oauth
