@@ -424,7 +424,6 @@ cd ~/.cache/checkouts/github.com/earendil-works/pi
 npm --userconfig /dev/null install --ignore-scripts
 cd packages/ai
 npm --userconfig /dev/null run generate-models
-npm --userconfig /dev/null run generate-image-models
 ```
 
 Copy generated files into this repo:
@@ -436,7 +435,6 @@ cp ~/.cache/checkouts/github.com/earendil-works/pi/packages/ai/src/providers/*.m
 cp ~/.cache/checkouts/github.com/earendil-works/pi/packages/ai/src/providers/data/*.json packages/pi/generated/provider-data/
 cp ~/.cache/checkouts/github.com/earendil-works/pi/packages/ai/src/providers/data/.manifest.json packages/pi/generated/provider-data/
 cp ~/.cache/checkouts/github.com/earendil-works/pi/packages/ai/src/models.generated.ts packages/pi/generated/
-cp ~/.cache/checkouts/github.com/earendil-works/pi/packages/ai/src/image-models.generated.ts packages/pi/generated/
 ```
 
 ### 3. Update npm dependency hash

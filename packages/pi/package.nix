@@ -37,7 +37,6 @@ buildNpmPackage {
   postPatch = ''
     patch -p1 < ${./tree-summary-stream-fn.patch}
     cp ${./generated/models.generated.ts} packages/ai/src/models.generated.ts
-    cp ${./generated/image-models.generated.ts} packages/ai/src/image-models.generated.ts
     rm -f packages/ai/src/providers/*.models.ts
     cp ${./generated/providers}/*.models.ts packages/ai/src/providers/
     rm -rf packages/ai/src/providers/data
@@ -55,6 +54,9 @@ buildNpmPackage {
     fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, "\t") + "\n");
     for (const name of [
       "tui",
+      "telemetry",
+      "codemode",
+      "mcp",
       "ai",
       "durable",
       "agent",
@@ -88,7 +90,7 @@ buildNpmPackage {
 
     cp -R node_modules/. $out/lib/node_modules/
     rm -f $out/lib/node_modules/@earendil-works/pi-evals
-    cp -R packages/{agent,ai,chord,client,coding-agent,durable,protocol,server,telemetry,tui} $out/lib/packages/
+    cp -R packages/{agent,ai,chord,client,coding-agent,codemode,durable,mcp,protocol,server,telemetry,tui} $out/lib/packages/
     cp -R packages/session-backends/sqlite-node $out/lib/packages/session-backends/
 
     ${lib.optionalString (splashPatch != null) ''
