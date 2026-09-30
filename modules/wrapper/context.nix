@@ -147,7 +147,6 @@ let
       };
   generatedExtensions =
     bundledExtensionPaths
-    ++ lib.optionals config.pi.decompMatcher.enable [ (bundledExtensionPath "decomp-matcher") ]
     ++ lib.optionals config.pi.gondolin.enable [ gondolinExtensionPath ]
     ++ lib.optionals config.pi.camofoxBrowser.enable [
       "${piResources}/share/pi-resources/extensions/camofox-browser.ts"
