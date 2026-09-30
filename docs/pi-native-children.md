@@ -6,12 +6,11 @@ Do not resolve a profile name from `PATH` or fall back to `process.execPath` for
 
 This invariant does not apply to root launchers, generic orchestrators, configured commands, arbitrary shell commands, or explicit profile selection. Those may run any command selected by their user or configuration.
 
-`run-current-pi` is an optional convenience for manually re-executing the active wrapper.
+To manually re-execute the active wrapper, invoke `PI_LAUNCHER_BIN` directly.
 
 Examples:
 
 ```sh
-run-current-pi
-run-current-pi --session /path/to/session.jsonl
-herdr pane run "$PANE" "run-current-pi --session '/path/to/session.jsonl'"
+"${PI_LAUNCHER_BIN:?PI_LAUNCHER_BIN is required}"
+"${PI_LAUNCHER_BIN:?PI_LAUNCHER_BIN is required}" --session /path/to/session.jsonl
 ```

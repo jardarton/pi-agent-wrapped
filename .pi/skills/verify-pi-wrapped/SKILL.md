@@ -11,9 +11,9 @@ Verify behavior, not only compilation. Use a fresh Pi process in a separate Herd
 
 - First require `HERDR_ENV=1`. If unavailable, run non-interactive checks and report that interactive Herdr verification could not be performed.
 - Require `PI_LAUNCHER_BIN` to be set. Fail instead of guessing.
-- Spawn Pi only through the exact current `PI_LAUNCHER_BIN` value or `run-current-pi`.
+- Spawn Pi only through the exact current `PI_LAUNCHER_BIN` value.
 - Never invoke `pi`, `p`, `p-minimal`, `p-sandboxed`, a Nix-built candidate launcher, or another launcher name directly.
-- Prefer the absolute `PI_LAUNCHER_BIN` path in Herdr commands because a new pane may not have `run-current-pi` in `PATH`.
+- Use the absolute `PI_LAUNCHER_BIN` path in Herdr commands.
 - Never control or close the current focused pane. Parse current IDs from Herdr responses; do not guess IDs.
 
 ## 1. Identify the verification surface
@@ -74,7 +74,7 @@ herdr pane run <new-pane-id> "cd <repo-root> && <absolute-PI_LAUNCHER_BIN> --no-
 
 Add one `-e` per entry point needed for the test. Include interacting changed extensions when the behavior crosses extension boundaries.
 
-Do not use `run-current-pi` inside the new pane unless its availability there was verified. The authoritative absolute launcher path is preferred.
+Use the authoritative absolute launcher path inside the new pane.
 
 Wait for startup and inspect output:
 
