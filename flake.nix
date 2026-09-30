@@ -101,6 +101,7 @@
         system:
         let
           inherit (self.packages.${system})
+            pi-fff
             pi-clarify
             pi-meta-oauth
             pi-resources
@@ -108,6 +109,7 @@
             ;
         in
         {
+          fff = pi-fff;
           clarify = pi-clarify;
           meta-oauth = pi-meta-oauth;
           extensions = pi-resources;
