@@ -7,6 +7,7 @@
   cargo,
   rustc,
   stdenv,
+  nodejs,
 }:
 
 let
@@ -96,6 +97,16 @@ buildNpmPackage rec {
     cp packages/pi-fff/package.json "$package_dir/package.json"
     cp -R packages/pi-fff/src "$package_dir/src"
     cp -R node_modules/ffi-rs "$package_dir/node_modules/ffi-rs"
+
+    # ffi-rs generates a full Node diagnostic report just to detect glibc.
+    # Reports synchronously resolve socket hostnames, blocking Pi startup when
+    # another extension already has open connections. Exclude that diagnostic
+    # networking only during detection; preserve the caller's report settings.
+    substituteInPlace "$package_dir/node_modules/ffi-rs/index.js" \
+      --replace-fail \
+        $'    const { glibcVersionRuntime } = process.report.getReport().header\n    return !glibcVersionRuntime' \
+        $'    const excludeNetwork = process.report.excludeNetwork\n    process.report.excludeNetwork = true\n    try {\n      const { glibcVersionRuntime } = process.report.getReport().header\n      return !glibcVersionRuntime\n    } finally {\n      process.report.excludeNetwork = excludeNetwork\n    }'
+
     cp -R node_modules/@yuuang "$package_dir/node_modules/@yuuang"
     cp -R node_modules/@sinclair/typebox "$package_dir/node_modules/@sinclair/typebox"
     cp -R packages/fff-node "$package_dir/node_modules/@ff-labs/fff-node"
@@ -113,6 +124,15 @@ buildNpmPackage rec {
     EOF
 
     runHook postInstall
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ nodejs ];
+  installCheckPhase = ''
+    runHook preInstallCheck
+    FFF_PACKAGE_DIR="$out/share/pi-packages/fff" \
+      node --test ${./fff-native-startup.test.mjs}
+    runHook postInstallCheck
   '';
 
   meta = {
