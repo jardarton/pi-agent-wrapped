@@ -70,7 +70,6 @@ in
     # Python available to the agent regardless can add it to `runtimePkgs`.
     ++ lib.optionals (builtins.elem "session-reader" config.pi.localSkills) [ pkgs.python3 ]
     ++ lib.optionals config.pi.nixOptions.enable [ pkgs.nix ]
-    ++ lib.optionals config.pi.decompMatcher.enable [ pkgs.git ]
     ++ lib.optionals config.pi.review.enable [
       pkgs.git
       pkgs.gh

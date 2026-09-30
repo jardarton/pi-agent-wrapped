@@ -5,68 +5,6 @@
 }:
 {
   options.pi = {
-    decompMatcher = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Whether to enable the bounded decompilation matcher child-job extension.";
-      };
-
-      jobRoot = lib.mkOption {
-        type = lib.types.str;
-        default = ".pi/decomp-matcher-jobs";
-        description = "Directory, relative to the Pi launch working directory when relative, in which retained matcher jobs are created.";
-      };
-
-      allowedModels = lib.mkOption {
-        type = lib.types.listOf (
-          lib.types.submodule {
-            options = {
-              provider = lib.mkOption { type = lib.types.str; };
-              model = lib.mkOption { type = lib.types.str; };
-              reasoning = lib.mkOption {
-                type = lib.types.enum [
-                  "off"
-                  "minimal"
-                  "low"
-                  "medium"
-                  "high"
-                  "xhigh"
-                  "max"
-                ];
-              };
-            };
-          }
-        );
-        default = [ ];
-        description = "Explicit provider, model, and reasoning triples that the matcher may launch.";
-      };
-
-      defaultModel = lib.mkOption {
-        type = lib.types.nullOr (
-          lib.types.submodule {
-            options = {
-              provider = lib.mkOption { type = lib.types.str; };
-              model = lib.mkOption { type = lib.types.str; };
-              reasoning = lib.mkOption {
-                type = lib.types.enum [
-                  "off"
-                  "minimal"
-                  "low"
-                  "medium"
-                  "high"
-                  "xhigh"
-                  "max"
-                ];
-              };
-            };
-          }
-        );
-        default = null;
-        description = "Default allowlisted provider, model, and reasoning triple for matcher jobs.";
-      };
-    };
-
     gondolin = {
       enable = lib.mkOption {
         type = lib.types.bool;
