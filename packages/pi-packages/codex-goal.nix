@@ -15,6 +15,10 @@ buildNpmPackage rec {
     hash = "sha256-iB5PTicSL4UUf3YUHr9wL7UaPwK1vhH3mG1uC8wupck=";
   };
 
+  # Keep active continuation history append-only; retain upstream stale-work guards.
+  # The patch includes regression tests run by the upstream test suite below.
+  patches = [ ./codex-goal/continuation-cache.patch ];
+
   npmDepsHash = "sha256-yjmi5lqImtdcslqzE3+BgQdAnpSwWwNOqWNuqlb3XM4=";
   npmDepsFetcherVersion = 2;
 
