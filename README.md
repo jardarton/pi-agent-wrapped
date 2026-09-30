@@ -170,6 +170,33 @@ Or extend the evaluated module yourself:
 }).config.wrap { inherit pkgs; }
 ```
 
+## Bundled themes
+
+The wrapper exposes these themes to Pi alongside its built-in `dark` and `light`:
+
+| `pi.theme` | Palette |
+| --- | --- |
+| `"gruvbox-dark-hard"` | [Gruvbox](https://github.com/morhetz/gruvbox), warm colors with the hard dark background |
+| `"nord"` | [Nord](https://www.nordtheme.com/), Polar Night backgrounds and Frost accents |
+| `"kanagawa"` | [Kanagawa Wave](https://github.com/rebelot/kanagawa.nvim), ink backgrounds and muted blue, violet, and gold accents |
+
+Select one in a consumer profile module:
+
+```nix
+{
+  pi.theme = "nord";
+}
+```
+
+No custom theme is selected by default. All three include syntax and Markdown
+colors, tool state backgrounds, search highlights, scrollbars, reasoning levels,
+and HTML export backgrounds. Gruvbox and Nord use subtle green and red tool panel
+tints; Nord also brightens comments for readability. Kanagawa uses Wave's native
+diff backgrounds. Pi leaves the terminal's overall background unchanged; matching
+it to Gruvbox's `#1d2021`, Nord's `#2e3440`, or Kanagawa's `#1f1f28` completes the
+palette. Use `/settings` to preview themes; the declarative `pi.theme` setting is
+restored on the next wrapper launch.
+
 ## Selected wrapper options
 
 All are optional; unset settings are omitted so Pi's own defaults apply.
