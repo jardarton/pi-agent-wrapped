@@ -49,7 +49,6 @@ buildNpmPackage {
       "ai",
       "durable",
       "agent",
-      "session-backends/sqlite-node",
       "protocol",
       "client",
       "coding-agent",
@@ -75,12 +74,11 @@ buildNpmPackage {
   installPhase = ''
     runHook preInstall
 
-    mkdir -p $out/lib/node_modules $out/lib/packages/session-backends $out/bin
+    mkdir -p $out/lib/node_modules $out/lib/packages $out/bin
 
     cp -R node_modules/. $out/lib/node_modules/
     rm -f $out/lib/node_modules/@earendil-works/pi-evals
     cp -R packages/{agent,ai,chord,client,coding-agent,codemode,durable,mcp,protocol,server,telemetry,tui} $out/lib/packages/
-    cp -R packages/session-backends/sqlite-node $out/lib/packages/session-backends/
 
     chmod +x $out/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js
     ln -s $out/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js $out/bin/pi
