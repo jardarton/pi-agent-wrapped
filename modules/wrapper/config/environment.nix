@@ -14,6 +14,9 @@
     // lib.optionalAttrs config.pi.betterOpenAI.imageTool.enable {
       PI_BETTER_OPENAI_IMAGE_TOOL = "1";
     }
+    // lib.optionalAttrs (config.pi.cliproxyapi.enable && config.pi.cliproxyapi.baseUrl != null) {
+      CLIPROXYAPI_BASE_URL = config.pi.cliproxyapi.baseUrl;
+    }
     // lib.optionalAttrs config.pi.camofoxBrowser.enable (
       {
         CAMOFOX_URL = config.pi.camofoxBrowser.url;

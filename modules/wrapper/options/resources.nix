@@ -9,6 +9,7 @@ let
   inherit (context)
     bundledExtensionNames
     clarifyPackage
+    cliproxyapiPackage
     codexConversionPackage
     codexGoalPackage
     dynamicWorkflowsPackage
@@ -71,6 +72,16 @@ let
         package = codexConversionPackage;
         extensions = [
           "${codexConversionPackage}/share/pi-packages/codex-conversion/dist/index.js"
+        ];
+      }
+    ]
+    ++ lib.optionals config.pi.cliproxyapi.enable [
+      {
+        package = cliproxyapiPackage;
+        # Only the provider; upstream's second extension (tps.ts) is an optional
+        # runtime/TPS toast and is left out.
+        extensions = [
+          "${cliproxyapiPackage}/share/pi-packages/cliproxyapi-provider/extensions/index.ts"
         ];
       }
     ]

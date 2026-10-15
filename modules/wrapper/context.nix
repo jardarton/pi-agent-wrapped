@@ -37,6 +37,7 @@ let
   metaOAuthPackage = piPackages.pi-meta-oauth;
   chromeCdpPackage = piPackages.pi-chrome-cdp;
   codexConversionPackage = piPackages.pi-codex-conversion;
+  cliproxyapiPackage = piPackages.pi-cliproxyapi-provider;
   bundledExtensionPath = name: "${piResources}/share/pi-resources/extensions/${name}.ts";
   bundledExtensionNames = [
     "better-openai"
@@ -175,6 +176,7 @@ in
     bundledExtensionPath
     chromeCdpPackage
     clarifyPackage
+    cliproxyapiPackage
     codexConversionPackage
     codexGoalPackage
     dynamicWorkflowsPackage

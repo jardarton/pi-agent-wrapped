@@ -28,4 +28,5 @@ in
   pi-meta-oauth = callPackage ./pi-packages/meta-oauth.nix { };
   pi-chrome-cdp = callPackage ./pi-packages/chrome-cdp.nix { };
   pi-codex-conversion = callPackage ./pi-packages/codex-conversion.nix { };
+  pi-cliproxyapi-provider = callPackage ./pi-packages/cliproxyapi-provider.nix { };
 }

@@ -67,6 +67,27 @@
       description = "Whether the bundled Better OpenAI extension registers the agent-callable openai_image tool. The /openai-image command and other extension functionality remain available when disabled.";
     };
 
+    cliproxyapi = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Whether to load the CLIProxyAPI provider extension, which discovers models from a CLIProxyAPI server and registers them as a Pi provider.";
+      };
+
+      baseUrl = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "https://cli-proxy-api.example.com";
+        description = "CLIProxyAPI root URL exported as CLIPROXYAPI_BASE_URL. When null, the extension's own configuration or default applies.";
+      };
+
+      apiKeyFile = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "Path to a file containing the CLIProxyAPI client key. The launcher reads it at start and exports CLIPROXYAPI_API_KEY unless that is already set, so the key stays out of the Nix store and Pi's state.";
+      };
+    };
+
     camofoxBrowser = {
       enable = lib.mkOption {
         type = lib.types.bool;

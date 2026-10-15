@@ -214,12 +214,33 @@ All are optional; unset settings are omitted so Pi's own defaults apply.
 - opt-in integrations under `pi.fff`, `pi.dynamicWorkflows`, `pi.goal`, `pi.review`,
   `pi.clarify`, `pi.metaOAuth`, `pi.chromeCdp`, `pi.codexConversion`,
   `pi.mattPocockSkills`, `pi.pstackSkills`, `pi.camofoxBrowser`,
-  `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, and `pi.librarian`
+  `pi.nixOptions`, `pi.betterOpenAI`, `pi.gondolin`, `pi.cheapModels`, `pi.librarian`,
+  and `pi.cliproxyapi`
 
 When `tree-summary-model` is listed in `pi.bundledExtensions`, its two overrides
 can be controlled independently with `pi.cheapModels.treeSummary.enable` and
 `pi.cheapModels.compaction.enable`. Both default to `true` for compatibility;
 setting one to `false` leaves that operation to Pi's built-in implementation.
+
+### CLIProxyAPI provider
+
+`pi.cliproxyapi.enable` loads the
+[CLIProxyAPI provider](https://github.com/router-for-me/pi-cliproxyapi-provider),
+which registers the models a CLIProxyAPI server offers as the `cliproxyapi`
+provider. Set `baseUrl` to the server root and `apiKeyFile` to a file holding the
+client key; the launcher reads the file at start, so the key is never written to
+the Nix store or Pi's state:
+
+```nix
+pi.cliproxyapi = {
+  enable = true;
+  baseUrl = "https://cli-proxy-api.example.com";
+  apiKeyFile = config.sops.secrets.cliproxyapi.path;
+};
+pi.defaultModel = "cliproxyapi/gpt-5.5";
+```
+
+An ambient `CLIPROXYAPI_API_KEY` or `CLIPROXYAPI_BASE_URL` takes precedence.
 
 ### Idle timer and optional command
 
