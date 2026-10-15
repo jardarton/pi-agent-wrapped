@@ -156,6 +156,34 @@ nix fmt
 nix build .#pi-meta-oauth .#p
 ```
 
+### CLIProxyAPI provider package
+
+`packages/pi-packages/cliproxyapi-provider.nix` packages the CLIProxyAPI provider
+extension from `pi-cliproxyapi-provider`:
+
+- repo: <https://github.com/router-for-me/pi-cliproxyapi-provider>
+- extension used: `extensions/index.ts` (the optional `extensions/tps.ts` is not loaded)
+- flake package: `.#pi-cliproxyapi-provider`
+- wrapper option: `pi.cliproxyapi.enable` (disabled by default)
+
+The extension patches Pi's `openai-codex-responses` WebSocket transport by matching
+its source, and stops loading when that source changes. After updating Pi, run a
+profile with `pi.cliproxyapi.enable = true` against a CLIProxyAPI server and send a
+prompt to a `cliproxyapi/...` model. Update the pinned version, revision, and source
+hash with:
+
+```bash
+rev=$(git ls-remote https://github.com/router-for-me/pi-cliproxyapi-provider HEAD | awk '{print $1}')
+nix flake prefetch --json "github:router-for-me/pi-cliproxyapi-provider/$rev"
+```
+
+Then run:
+
+```bash
+nix fmt
+nix build .#pi-cliproxyapi-provider .#p
+```
+
 ### Chrome CDP skill package
 
 `packages/pi-packages/chrome-cdp.nix` packages Pasky's `chrome-cdp` skill as a

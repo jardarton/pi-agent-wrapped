@@ -154,6 +154,7 @@
               self.packages.${system}.pi-meta-oauth
               self.packages.${system}.pi-chrome-cdp
               self.packages.${system}.pi-codex-conversion
+              self.packages.${system}.pi-cliproxyapi-provider
             ];
           };
         }

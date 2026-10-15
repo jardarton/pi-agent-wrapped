@@ -7,6 +7,14 @@
 {
   config = {
     runShell = [
+      # The extension only takes the key as a value, so read the file here rather
+      # than writing the key into the Nix store or Pi's state directory.
+      (lib.optionalString (config.pi.cliproxyapi.enable && config.pi.cliproxyapi.apiKeyFile != null) ''
+        if [ -z "''${CLIPROXYAPI_API_KEY-}" ] && [ -r ${lib.escapeShellArg config.pi.cliproxyapi.apiKeyFile} ]; then
+          CLIPROXYAPI_API_KEY="$(${pkgs.coreutils}/bin/cat ${lib.escapeShellArg config.pi.cliproxyapi.apiKeyFile})"
+          export CLIPROXYAPI_API_KEY
+        fi
+      '')
       # Gondolin image discovery can shell out to `nix build`, so it must only run
       # for profiles that actually enable Gondolin. Emitting it unconditionally made
       # every launch inside any flake directory pay for a Nix evaluation.
