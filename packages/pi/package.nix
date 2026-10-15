@@ -48,11 +48,9 @@ buildNpmPackage {
       "mcp",
       "ai",
       "durable",
+      "env",
       "agent",
-      "protocol",
-      "client",
       "coding-agent",
-      "server",
     ]) {
       const path = `packages/''${name}/package.json`;
       const pkg = JSON.parse(fs.readFileSync(path, "utf8"));
@@ -78,7 +76,7 @@ buildNpmPackage {
 
     cp -R node_modules/. $out/lib/node_modules/
     rm -f $out/lib/node_modules/@earendil-works/pi-evals
-    cp -R packages/{agent,ai,chord,client,coding-agent,codemode,durable,mcp,protocol,server,telemetry,tui} $out/lib/packages/
+    cp -R packages/{agent,ai,chord,coding-agent,codemode,durable,env,mcp,telemetry,tui} $out/lib/packages/
 
     chmod +x $out/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js
     ln -s $out/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js $out/bin/pi
