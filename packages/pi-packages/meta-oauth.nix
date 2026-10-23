@@ -2,6 +2,8 @@
   lib,
   stdenvNoCC,
   fetchFromGitHub,
+  nodejs,
+  piPackage,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -22,9 +24,22 @@ stdenvNoCC.mkDerivation rec {
 
     package_dir="$out/share/pi-packages/meta-oauth"
     mkdir -p "$package_dir"
-    cp extensions/meta.ts LICENSE README.md "$package_dir/"
+    cp package.json LICENSE README.md "$package_dir/"
+    cp -R extensions src "$package_dir/"
 
     runHook postInstall
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ nodejs ];
+  installCheckPhase = ''
+    runHook preInstallCheck
+    export HOME=$(mktemp -d)
+    export XDG_CACHE_HOME="$HOME/.cache"
+    META_OAUTH_PACKAGE_DIR="$out/share/pi-packages/meta-oauth" \
+      PI_PACKAGE_DIR="${piPackage}/lib/node_modules/@earendil-works/pi-coding-agent" \
+      node --test ${./meta-oauth-load.test.mjs}
+    runHook postInstallCheck
   '';
 
   meta = {

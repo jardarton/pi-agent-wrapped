@@ -58,7 +58,7 @@ let
     ++ lib.optionals config.pi.metaOAuth.enable [
       {
         package = metaOAuthPackage;
-        extensions = [ "${metaOAuthPackage}/share/pi-packages/meta-oauth/meta.ts" ];
+        extensions = [ "${metaOAuthPackage}/share/pi-packages/meta-oauth/extensions/meta.ts" ];
       }
     ]
     ++ lib.optionals config.pi.chromeCdp.enable [

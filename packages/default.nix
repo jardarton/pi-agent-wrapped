@@ -25,7 +25,9 @@ in
   pi-codex-goal = callPackage ./pi-packages/codex-goal.nix { };
   pi-review = callPackage ./pi-packages/review.nix { };
   pi-clarify = callPackage ./pi-packages/clarify.nix { };
-  pi-meta-oauth = callPackage ./pi-packages/meta-oauth.nix { };
+  pi-meta-oauth = callPackage ./pi-packages/meta-oauth.nix {
+    piPackage = if piPackage == null then pi else piPackage;
+  };
   pi-chrome-cdp = callPackage ./pi-packages/chrome-cdp.nix { };
   pi-codex-conversion = callPackage ./pi-packages/codex-conversion.nix { };
   pi-cliproxyapi-provider = callPackage ./pi-packages/cliproxyapi-provider.nix { };
