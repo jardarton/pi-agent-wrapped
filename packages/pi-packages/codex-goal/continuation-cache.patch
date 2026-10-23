@@ -1,24 +1,28 @@
-diff --git a/README.md b/README.md
-index 353c2a8..6c1d907 100644
---- a/README.md
-+++ b/README.md
-@@ -194 +194 @@ While a goal is active, the extension:
--- compacts repeated hidden goal continuations before provider context so only the latest active continuation stays runnable, older ones become short bookkeeping markers, and auto-queued continuations use a compact prompt after `/goal` start or resume
-+- appends compact hidden goal continuations without rewriting older active reminders, preserving the provider request prefix; host compaction owns ordinary history pruning, while stale-goal cancellation remains enforced
 diff --git a/src/queued-goal-work.ts b/src/queued-goal-work.ts
-index 2acbe9e..c2a8f0f 100644
 --- a/src/queued-goal-work.ts
 +++ b/src/queued-goal-work.ts
-@@ -1 +1 @@
+@@ -1,4 +1,4 @@
 -import { continuationGoalIdFromPrompt, supersededContinuationMessage } from "./prompts.ts";
 +import { continuationGoalIdFromPrompt } from "./prompts.ts";
-@@ -16,5 +15,0 @@ import { CUSTOM_ENTRY_TYPE, type GoalStatus, type ThreadGoal } from "./types.ts"
+ import {
+   isActiveGoalQueuedDetails,
+   type QueuedGoalContextCarrier,
+@@ -13,11 +13,6 @@
+ } from "./queued-goal-messages.ts";
+ import { CUSTOM_ENTRY_TYPE, type GoalStatus, type ThreadGoal } from "./types.ts";
+ 
 -interface SupersededContinuationDetails {
 -  kind: "superseded_continuation";
 -  goalId: string;
 -}
 -
-@@ -28,10 +22,0 @@ interface StaleContinuationDetails {
+ interface StaleContinuationDetails {
+   kind: "stale_continuation";
+   goalId: string;
+@@ -25,16 +20,6 @@
+   currentStatus: GoalStatus | null;
+ }
+ 
 -interface SupersededQueuedGoalCustomMessage extends QueuedGoalCustomMessage {
 -  content: string;
 -  display: false;
@@ -29,14 +33,26 @@ index 2acbe9e..c2a8f0f 100644
 -  content: QueuedGoalTextPart[];
 -}
 -
-@@ -48,5 +33 @@ interface StaleQueuedGoalUserMessage extends QueuedGoalUserMessage {
+ interface StaleQueuedGoalCustomMessage extends QueuedGoalCustomMessage {
+   content: string;
+   display: false;
+@@ -45,11 +30,7 @@
+   content: QueuedGoalTextPart[];
+ }
+ 
 -type RewrittenQueuedGoalWorkMessage =
 -  | SupersededQueuedGoalCustomMessage
 -  | SupersededQueuedGoalUserMessage
 -  | StaleQueuedGoalCustomMessage
 -  | StaleQueuedGoalUserMessage;
 +type RewrittenQueuedGoalWorkMessage = StaleQueuedGoalCustomMessage | StaleQueuedGoalUserMessage;
-@@ -126,72 +106,0 @@ function queuedGoalWorkMessageId(message: QueuedGoalContextInput): string | null
+ 
+ type ProviderContextRewrite<TMessage extends QueuedGoalContextInput> =
+   TMessage & RewrittenQueuedGoalWorkMessage;
+@@ -123,78 +104,6 @@
+   return extensionQueuedGoalWorkMessageId(message);
+ }
+ 
 -function supersededContinuationContextMessage(
 -  message: QueuedGoalWorkSourceMessage,
 -  goalId: string,
@@ -109,10 +125,22 @@ index 2acbe9e..c2a8f0f 100644
 -  return { messages: nextMessages, changed };
 -}
 -
-@@ -247 +156 @@ export function applyQueuedGoalProviderContextRewrites<TMessage extends QueuedGo
+ function staleGoalContinuationContextMessage(
+   message: QueuedGoalWorkSourceMessage,
+   queuedGoalId: string,
+@@ -244,7 +153,7 @@
+   },
+ ): { messages: TMessage[]; changed: boolean } {
+   let changed = false;
 -  let nextMessages: TMessage[] = messages.map((message) => {
 +  const nextMessages: TMessage[] = messages.map((message) => {
-@@ -271,11 +180,4 @@ export function applyQueuedGoalProviderContextRewrites<TMessage extends QueuedGo
+     const queuedGoalId = options.resolveStaleQueuedGoalWorkMessageId(message);
+     if (queuedGoalId === null) {
+       return message;
+@@ -268,17 +177,10 @@
+     return mergeProviderContextMessage(message, rewritten);
+   });
+ 
 -  if (options.goal?.status === "active") {
 -    const deduped = dedupeActiveGoalContinuations(
 -      nextMessages,
@@ -128,10 +156,11 @@ index 2acbe9e..c2a8f0f 100644
 +  // with bookkeeping markers changes the cached prefix on every continuation.
 +  // Stale-goal cancellation above remains authoritative; ordinary history pruning
 +  // belongs at the host compaction boundary, not in each provider request.
+ 
+   return { messages: nextMessages, changed };
+ }
 diff --git a/test/continuation-cache.test.ts b/test/continuation-cache.test.ts
-new file mode 100644
-index 0000000..678aca4
---- /dev/null
+--- a/test/continuation-cache.test.ts
 +++ b/test/continuation-cache.test.ts
 @@ -0,0 +1,86 @@
 +import assert from "node:assert/strict";
@@ -221,79 +250,121 @@ index 0000000..678aca4
 +  assert.deepEqual(serializedProviderInput(results[0]?.messages ?? history), previousInput);
 +});
 diff --git a/test/provider-context.test.ts b/test/provider-context.test.ts
-index 3eb5194..8cf6d05 100644
 --- a/test/provider-context.test.ts
 +++ b/test/provider-context.test.ts
-@@ -21 +21 @@ import {
+@@ -19,7 +19,7 @@
+   requireProviderContextResult,
+ } from "./support/runtime-harness.ts";
+ 
 -test("provider context dedupes many active continuations without refreshing the latest prompt", async () => {
 +test("provider context preserves every active continuation without refreshing usage", async () => {
-@@ -56 +56,2 @@ test("provider context dedupes many active continuations without refreshing the
+   const harness = createRuntimeHarness();
+   await harness.runCommand("ship it");
+   const goal = harness.snapshot().goal;
+@@ -54,15 +54,16 @@
+   ];
+ 
+   const results = await emitProviderContext(harness, messages);
 -  const result = requireProviderContextResult(results);
 +  assert.equal(results[0], undefined);
 +  const result = { messages };
-@@ -59 +60,2 @@ test("provider context dedupes many active continuations without refreshing the
+   assert.equal(result.messages.length, 3);
+ 
 -  assert.match(String(providerContextMessageAt(result, 0).content), /Superseded hidden goal continuation bookkeeping/);
 +  assert.equal(providerContextMessageAt(result, 0).content, fullStart);
 +  assert.equal(providerContextMessageAt(result, 1).content, olderContinuation);
-@@ -61 +63 @@ test("provider context dedupes many active continuations without refreshing the
+   assert.deepEqual(providerContextMessageAt(result, 0).details, {
 -    kind: "superseded_continuation",
 +    kind: "command_start",
-@@ -64 +65,0 @@ test("provider context dedupes many active continuations without refreshing the
+     goalId: goal.goalId,
+   });
 -  assert.match(String(providerContextMessageAt(result, 1).content), /Superseded hidden goal continuation bookkeeping/);
-@@ -88 +89 @@ test("active provider-context user marker without passthrough binding remains ve
+ 
+   const latestContent = String(providerContextMessageAt(result, 2).content);
+   assert.match(latestContent, /Tokens used: 99/);
+@@ -86,7 +87,7 @@
+   assert.match(userPrompt, /<untrusted_objective>/);
+ });
+ 
 -test("active provider-context dedupe preserves historical user marker mixed with hidden continuations", async () => {
 +test("active provider context preserves historical user marker mixed with hidden continuations", async () => {
-@@ -120 +121,2 @@ test("active provider-context dedupe preserves historical user marker mixed with
+   const harness = createRuntimeHarness();
+   await harness.runCommand("ship it");
+   const goal = harness.snapshot().goal;
+@@ -118,10 +119,11 @@
+   ];
+ 
+   const contextResults = await emitProviderContext(harness, messages);
 -  const result = requireProviderContextResult(contextResults);
 +  assert.equal(contextResults[0], undefined);
 +  const result = { messages };
-@@ -123 +125 @@ test("active provider-context dedupe preserves historical user marker mixed with
+   assert.equal(result.messages.length, 3);
+ 
 -  assert.match(String(providerContextMessageAt(result, 0).content), /Superseded hidden goal continuation bookkeeping/);
 +  assert.equal(providerContextMessageAt(result, 0).content, olderContinuation);
-@@ -134 +136 @@ for (const source of ["interactive", "rpc"] as const) {
+   assert.deepEqual(providerContextMessageAt(result, 1).content, userMessage.content);
+   assert.match(String(userContentFromUnknown(providerContextMessageAt(result, 1).content)[0]?.text), /<untrusted_objective>/);
+ 
+@@ -132,7 +134,7 @@
+ });
+ 
+ for (const source of ["interactive", "rpc"] as const) {
 -  test(`active goal pasted continuation marker from ${source} survives provider-context dedupe`, async () => {
 +  test(`active goal pasted continuation marker from ${source} survives provider context`, async () => {
-@@ -161 +163 @@ for (const source of ["interactive", "rpc"] as const) {
+     const harness = createRuntimeHarness();
+     await harness.runCommand("ship it");
+     const goal = harness.snapshot().goal;
+@@ -159,7 +161,7 @@
+   });
+ }
+ 
 -test("active goal provider-context dedupe preserves pasted marker input mixed with hidden continuations", async () => {
 +test("active goal provider context preserves pasted marker input mixed with hidden continuations", async () => {
-@@ -199 +201,2 @@ test("active goal provider-context dedupe preserves pasted marker input mixed wi
+   const harness = createRuntimeHarness();
+   await harness.runCommand("ship it");
+   const goal = harness.snapshot().goal;
+@@ -197,12 +199,13 @@
+   ];
+ 
+   const contextResults = await emitQueuedTurnThroughContext(harness, messages, 0);
 -  const result = requireProviderContextResult(contextResults);
 +  assert.equal(contextResults[0], undefined);
 +  const result = { messages };
-@@ -204 +207 @@ test("active goal provider-context dedupe preserves pasted marker input mixed wi
+   assert.equal(result.messages.length, 3);
+ 
+   assert.deepEqual(providerContextMessageAt(result, 1).content, userMessage.content);
+   assert.match(String(userContentFromUnknown(providerContextMessageAt(result, 1).content)[0]?.text), /<untrusted_objective>/);
 -  assert.match(String(providerContextMessageAt(result, 0).content), /Superseded hidden goal continuation bookkeeping/);
 +  assert.equal(providerContextMessageAt(result, 0).content, olderContinuation);
-@@ -212 +215 @@ test("active goal provider-context dedupe preserves pasted marker input mixed wi
+ 
+   const latestContent = String(providerContextMessageAt(result, 2).content);
+   assert.match(latestContent, /Tokens used: 99/);
+@@ -210,7 +213,7 @@
+   assert.equal(continuationGoalIdFromPrompt(latestContent), goal.goalId);
+ });
+ 
 -test("latest active continuation remains runnable after provider-context dedupe", async () => {
 +test("latest active continuation remains runnable without rewriting history", async () => {
-@@ -232,2 +235,2 @@ test("latest active continuation remains runnable after provider-context dedupe"
+   const harness = createRuntimeHarness();
+   await harness.runCommand("ship it");
+   const goal = harness.snapshot().goal;
+@@ -230,8 +233,8 @@
+       timestamp: 2,
+     }),
+   ]);
 -  const contextResult = requireProviderContextResult(contextResults);
 -  const latestContent = String(providerContextMessageAt(contextResult, 1).content);
 +  assert.equal(contextResults[0], undefined);
 +  const latestContent = latestInBranch;
-@@ -256 +259 @@ test("latest active continuation remains runnable after provider-context dedupe"
+   assert.equal(continuationGoalIdFromPrompt(latestContent), goal.goalId);
+ 
+   harness.sentMessages.length = 0;
+@@ -249,7 +252,7 @@
+   });
+ });
+ 
 -test("completed goals are not treated as active during continuation dedupe", async () => {
 +test("completed goals still neutralize stale continuations", async () => {
-diff --git a/test/queued-goal-work.test.ts b/test/queued-goal-work.test.ts
-index 641ed4f..0471b9d 100644
---- a/test/queued-goal-work.test.ts
-+++ b/test/queued-goal-work.test.ts
-@@ -73 +73 @@ test("applyQueuedGoalProviderContextRewrites rewrites stale custom and user queu
--test("applyQueuedGoalProviderContextRewrites supersedes older custom continuations without refreshing the latest", () => {
-+test("applyQueuedGoalProviderContextRewrites preserves older active continuations and the latest snapshot", () => {
-@@ -94,7 +94,4 @@ test("applyQueuedGoalProviderContextRewrites supersedes older custom continuatio
--  assert.equal(changed, true);
--  assert.equal(messages.length, 2);
--  assert.match(String(messages[0]?.content), /Superseded hidden goal continuation bookkeeping/);
--  assert.deepEqual(messages[0]?.details, {
--    kind: "superseded_continuation",
--    goalId: activeGoal.goalId,
--  });
-+  assert.equal(changed, false);
-+  assert.deepEqual(messages, [older, latest]);
-+  assert.equal(messages[0], older);
-+  assert.equal(messages[1], latest);
-@@ -152 +149,2 @@ test("applyQueuedGoalProviderContextRewrites leaves an active user marker verbat
--  assert.equal(changed, true);
-+  assert.equal(changed, false);
-+  assert.deepEqual(messages, [olderHidden, userMarker, latestHidden]);
+   const harness = createRuntimeHarness();
+   await harness.runCommand("ship it");
+   const goalId = harness.snapshot().goal?.goalId;

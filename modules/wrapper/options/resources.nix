@@ -179,8 +179,8 @@ in
         default = pkgs.fetchFromGitHub {
           owner = "mattpocock";
           repo = "skills";
-          rev = "d81f3a183412e71a5b1e84ca21bc1a35eea03a60";
-          hash = "sha256-zQ/wVrcHjIC+UjP4nDw3HARMqZd6LIDFmHKlp8AADYI=";
+          rev = "5beb35b040e3de97e54fa9e386d7e42d15c295c2";
+          hash = "sha256-2FKfe3/Fwc4MmwBLa+d/oQW4/gtYIssdWapy2MPd39I=";
         };
         description = "Pinned Matt Pocock skills source checkout.";
       };
