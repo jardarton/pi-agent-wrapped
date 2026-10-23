@@ -30,8 +30,8 @@ buildNpmPackage rec {
   src = fetchFromGitHub {
     owner = "dmtrKovalenko";
     repo = "fff";
-    rev = "89c19270ea2dfc20829a7429f72022571558093e";
-    hash = "sha256-dR/sAV/ELTdkn2li4TE5w81jKe+Sj/lk4D4URVbsy5Y=";
+    rev = "7353971198321b5330824c29eb4e49635c072245";
+    hash = "sha256-bm4fCycW4w6q3QsjSmrEIRQQDvQeOfjdpq+BTHBTUaw=";
   };
 
   npmDepsHash = "sha256-losBFW25iAkYaYkmjcob5ACUudyHSQk19cJyv+zqUKY=";
@@ -40,7 +40,7 @@ buildNpmPackage rec {
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit src;
-    hash = "sha256-VKI7MnqCGis78qmYuBkViT96ZhG4Wy9vARdnmGV048A=";
+    hash = "sha256-AUpvTi5VYZtlILTgjawaZZNygCBSeJnwWySwNxHCVE0=";
   };
 
   postPatch = ''
@@ -65,8 +65,8 @@ buildNpmPackage rec {
           "$get_current_dir"
       substituteInPlace packages/fff-node/src/binary.ts \
         --replace-fail \
-          $'export function findBinary(): string | null {\n  if (isDevWorkspace()) {' \
-          $'export function findBinary(): string | null {\n  const bundledPath = join(getPackageDir(), "bin", getLibFilename());\n  if (existsSync(bundledPath)) return bundledPath;\n\n  if (isDevWorkspace()) {'
+          $'    return override;\n  }\n\n  if (isDevWorkspace()) {' \
+          $'    return override;\n  }\n\n  const bundledPath = join(getPackageDir(), "bin", getLibFilename());\n  if (existsSync(bundledPath)) return bundledPath;\n\n  if (isDevWorkspace()) {'
   '';
 
   nativeBuildInputs = [

@@ -6,13 +6,13 @@
 
 stdenvNoCC.mkDerivation {
   pname = "pi-cliproxyapi-provider";
-  version = "1.4.22";
+  version = "1.4.23";
 
   src = fetchFromGitHub {
     owner = "router-for-me";
     repo = "pi-cliproxyapi-provider";
-    rev = "a9730fd6ab58ba98ea176c4bf7e9bb9fee3b316d";
-    hash = "sha256-37xRX3EV0lv8/9hjpxpD6xz7sASqKK8Gjwss8WwPoSM=";
+    rev = "79b56b5a9dcb8b859cbf9392465ad707b88dfd56";
+    hash = "sha256-PsmXW3yCr9zIDGpxsDz3nDfqE8NQPqEZNifbEo9GQCI=";
   };
 
   # Upstream tests need its npm dev dependencies (vitest, pinned pi packages); the

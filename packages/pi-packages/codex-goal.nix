@@ -6,20 +6,20 @@
 
 buildNpmPackage rec {
   pname = "pi-package-codex-goal";
-  version = "0.4.1";
+  version = "0.6.1";
 
   src = fetchFromGitHub {
     owner = "fitchmultz";
     repo = "pi-codex-goal";
-    rev = "d3cf163992606dbe4e1689b93890053a6ff5988b";
-    hash = "sha256-iB5PTicSL4UUf3YUHr9wL7UaPwK1vhH3mG1uC8wupck=";
+    rev = "ffea8e68fb831c6b218f300a1c6818b09f2e168f";
+    hash = "sha256-q5AdREXLclY+kNzyVSTI7MknfPva8Bsc0oiDwS9csqQ=";
   };
 
   # Keep active continuation history append-only; retain upstream stale-work guards.
   # The patch includes regression tests run by the upstream test suite below.
   patches = [ ./codex-goal/continuation-cache.patch ];
 
-  npmDepsHash = "sha256-yjmi5lqImtdcslqzE3+BgQdAnpSwWwNOqWNuqlb3XM4=";
+  npmDepsHash = "sha256-BLsTsVgzRa98aaYIWkuq3wuW11sGfOcj3yKlmCfRdIU=";
   npmDepsFetcherVersion = 2;
 
   buildPhase = ''
