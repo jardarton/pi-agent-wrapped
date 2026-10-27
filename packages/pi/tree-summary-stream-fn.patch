@@ -1,8 +1,8 @@
 diff --git a/packages/coding-agent/src/core/agent-session.ts b/packages/coding-agent/src/core/agent-session.ts
-index ac2bd4b1..f312aa8c 100644
+index 3a9174cf..e6ac031a 100644
 --- a/packages/coding-agent/src/core/agent-session.ts
 +++ b/packages/coding-agent/src/core/agent-session.ts
-@@ -3170,6 +3170,7 @@ export class AgentSession {
+@@ -4086,6 +4086,7 @@ export class AgentSession {
  				const result = (await this._extensionRunner.emit({
  					type: "session_before_tree",
  					preparation,
@@ -11,18 +11,18 @@ index ac2bd4b1..f312aa8c 100644
  				})) as SessionBeforeTreeResult | undefined;
  
 diff --git a/packages/coding-agent/src/core/extensions/types.ts b/packages/coding-agent/src/core/extensions/types.ts
-index eaff3a86..01e6bf6c 100644
+index 8bb7fbb5..3ee763ec 100644
 --- a/packages/coding-agent/src/core/extensions/types.ts
 +++ b/packages/coding-agent/src/core/extensions/types.ts
-@@ -12,6 +12,7 @@ import type {
- 	AgentMessage,
+@@ -14,6 +14,7 @@ import type {
+ 	AgentToolCallOutcome,
  	AgentToolResult,
  	AgentToolUpdateCallback,
 +	StreamFn,
  	ThinkingLevel,
  	ToolExecutionMode,
  } from "@earendil-works/pi-agent-core";
-@@ -656,6 +657,8 @@ export interface TreePreparation {
+@@ -853,6 +854,8 @@ export interface TreePreparation {
  export interface SessionBeforeTreeEvent {
  	type: "session_before_tree";
  	preparation: TreePreparation;
