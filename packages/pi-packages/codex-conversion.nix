@@ -10,7 +10,7 @@
 
 let
   version = "3.0.42";
-  rev = "0efb28097349076a217384925ef66dc48f24e4d3";
+  rev = "602482a05d6dd81e95038312431f3ab42df9079f";
 
   # Build the pidex fork from source. The repository uses Bun, while
   # buildNpmPackage needs an npm lock, so the adjacent lockfile is generated
